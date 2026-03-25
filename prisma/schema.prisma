@@ -22,11 +22,11 @@ enum UserRole {
 }
 
 model CandidateCredential {
-  id          String   @id @default(uuid())
-  name        String
-  phoneNumber String   @unique
-  linkedin    String   @unique
-  cvFile      String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id           String   @id @default(uuid())
+  name         String
+  phone_number String   @unique
+  linkedin     String   @unique
+  cv_file      String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
 }
