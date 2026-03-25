@@ -10,4 +10,8 @@ export class UsersControllerV1 {
     // WIP implement DTO
     return (await this.usersRepo.findOneById(id)) ?? {};
   }
+
+  async test() {
+
+  }
 }

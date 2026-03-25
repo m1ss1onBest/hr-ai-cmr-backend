@@ -6,8 +6,8 @@ export interface IUserData {
   password: string;
   email: string;
   role: UserRole;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export class User implements IUserData {
@@ -15,8 +15,8 @@ export class User implements IUserData {
   password: string;
   email: string;
   role: UserRole;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 
   constructor(data: IUserData | UserModel) {
     this.id = data.id;
@@ -24,8 +24,8 @@ export class User implements IUserData {
     this.password = data.password;
     this.role = data.role;
 
-    this.created_at = data.created_at;
-    this.updated_at = data.updated_at;
+    this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
   }
 
   safe(): SafeUserData {
