@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AuthConfig } from './configs';
+import { AuthConfig } from './modules/configs';
 import { JwtModule } from '@nestjs/jwt';
-import { JWT_TOKENS_SERVICE_PROVIDER } from './jwt/jwt.interface';
+import { JWT_TOKENS_SERVICE_PROVIDER } from './modules/jwt/jwt.interface';
 import { AuthControllerV1 } from './auth.controller.v1';
+import { REGISTER_USE_CASE_PROVIDER } from './use-cases/register/register.interface';
+import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+
+export const AUTH_MODULE_PROVIDERS = [
+  JWT_TOKENS_SERVICE_PROVIDER,
+  REGISTER_USE_CASE_PROVIDER,
+];
 
 @Module({
   imports: [
@@ -15,9 +22,10 @@ import { AuthControllerV1 } from './auth.controller.v1';
         },
       }),
     }),
+    DatabaseModule,
   ],
-  providers: [JWT_TOKENS_SERVICE_PROVIDER],
   controllers: [AuthControllerV1],
-  exports: [JWT_TOKENS_SERVICE_PROVIDER],
+  providers: [...AUTH_MODULE_PROVIDERS],
+  exports: [...AUTH_MODULE_PROVIDERS],
 })
 export class AuthModule {}
