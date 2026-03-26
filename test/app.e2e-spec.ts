@@ -64,11 +64,43 @@ describe('Auth (e2e)', () => {
     };
 
     const prisma = app.get(PrismaService);
-    prisma.user.findUnique = () => Promise.resolve(existingUser);
+    (prisma.user.findUnique as any) = () => Promise.resolve(existingUser);
 
     await request(app.getHttpServer())
       .post('/api/auth/login')
       .send({ email: 'user@example.com', password: 'wrong-password' })
       .expect(401);
+  });
+
+  it('/api/auth/register (POST) -> 201 and passes name to DB create', async () => {
+    const prisma = app.get(PrismaService);
+
+    const createSpy = jest.fn().mockResolvedValue({
+      id: 'u_1',
+      email: 'new@example.com',
+      name: 'Іван',
+      password: 'hashed',
+      role: 'HR',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    });
+
+    (prisma.user.findUnique as any) = () => Promise.resolve(null);
+    (prisma.user.create as any) = createSpy;
+
+    await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({ name: 'Іван', email: 'new@example.com', password: 'password123' })
+      .expect(201);
+
+    expect(createSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'Іван',
+          email: 'new@example.com',
+        }),
+      }),
+    );
   });
 });
