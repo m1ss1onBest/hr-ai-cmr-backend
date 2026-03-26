@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { IBaseUserRepository } from './base.repository';
+import { IBaseUserRepository } from '../../../contracts/use-cases/base.repository';
 import { User } from 'prisma/generated/client';
+import { CreateUserRequest } from 'src/api/users/dto/create.user.dto';
 
 @Injectable()
 export class UsersRepository extends IBaseUserRepository {
@@ -16,9 +17,7 @@ export class UsersRepository extends IBaseUserRepository {
     });
   }
 
-  async create(
-    data: Pick<User, 'email' | 'password' | 'role' | 'name'>,
-  ): Promise<User> {
+  async create(data: CreateUserRequest): Promise<User> {
     return await this.prisma.user.create({ data });
   }
 }
