@@ -1,9 +1,16 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
-import { UserRole } from 'prisma/generated/enums';
+import { UserRole } from '../../../prisma/generated/enums';
+import { User } from '../../../prisma/generated/client';
 import { UsersRepository } from 'src/shared/infrastructure/database/repositories/users.repository';
-import { RegisterDto } from './dto';
+import { LoginDto, RegisterDto } from './dto';
+
+type AuthUserResponse = Omit<User, 'password'>;
 
 @Injectable()
 export class AuthService {
@@ -34,5 +41,29 @@ export class AuthService {
     });
 
     return { token };
+  }
+
+  async login(
+    dto: LoginDto,
+  ): Promise<{ token: string; user: AuthUserResponse }> {
+    const user: User | null = await this.usersRepo.findOneByEmail(dto.email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const ok = await bcrypt.compare(dto.password, user.password);
+    if (!ok) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const token = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    const { password: _password, ...safeUser } = user;
+
+    return { token, user: safeUser };
   }
 }
