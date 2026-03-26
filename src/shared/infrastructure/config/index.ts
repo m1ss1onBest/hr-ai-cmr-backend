@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { ValidationError } from '@nestjs/common';
-import { JsonNull } from '@prisma/client/runtime/client';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import 'dotenv/config';
@@ -7,10 +9,8 @@ import 'reflect-metadata';
 
 export function Config(): ClassDecorator {
   return (target: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const instance = plainToInstance(target, new target());
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const errors: ValidationError[] = validateSync(instance, {
       skipMissingProperties: false,
       forbidUnknownValues: false,
@@ -26,7 +26,6 @@ export function Config(): ClassDecorator {
         })
         .join('; ');
       throw new Error(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         `Configuration validation for ${target.name}: ${messages}`,
       );
     }

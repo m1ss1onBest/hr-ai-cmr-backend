@@ -23,7 +23,11 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
+<<<<<<< HEAD
     "@nestjs/mapped-types": "^2.1.0",
+=======
+    "@nestjs/jwt": "^11.0.2",
+>>>>>>> a5f0a88 (feat/jwt-tokens/service)
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
