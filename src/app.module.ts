@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { VacanciesModule } from './api/vacancies/vacancies.module';
 import { AuthModule } from './api/auth/auth.module';
 import { ConfigurationModule } from './shared/infrastructure/config/config.module';
+import { CandidatesModule } from './api/candidates/candidates.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ConfigurationModule } from './shared/infrastructure/config/config.modul
     UsersModule,
     VacanciesModule,
     AuthModule,
+    CandidatesModule,
   ],
 })
 export class AppModule {}

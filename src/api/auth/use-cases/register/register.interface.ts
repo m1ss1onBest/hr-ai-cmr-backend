@@ -1,5 +1,8 @@
 import { Provider } from '@nestjs/common';
-import { RegisterUserRequest, RegisterUserResponse } from '../../dto/';
+import {
+  RegisterUserRequest,
+  RegisterUserResponse,
+} from '../../dto/register.dto';
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
 import { RegisterUseCase } from './register.use-case';
 

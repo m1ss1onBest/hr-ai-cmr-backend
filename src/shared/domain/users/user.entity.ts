@@ -18,14 +18,8 @@ export class User implements IUserData {
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(data: IUserData | UserModel) {
-    this.id = data.id;
-    this.email = data.email;
-    this.password = data.password;
-    this.role = data.role;
-
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
+  constructor(props: IUserData | UserModel) {
+    Object.assign(this, props);
   }
 
   safe(): SafeUserData {
