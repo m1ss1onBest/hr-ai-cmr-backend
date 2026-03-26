@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IsNotEmpty } from 'class-validator';
-import { Config } from '../../../shared/infrastructure/config';
+import { Config } from '../../../../shared/infrastructure/config';
 import { StringValue } from 'ms';
 
 @Config()

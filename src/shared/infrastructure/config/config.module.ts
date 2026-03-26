@@ -1,13 +1,13 @@
 import { Global, Module } from '@nestjs/common';
-import { AuthConfig } from '../../../api/auth/configs';
+import { AuthConfig } from '../../../api/auth/modules/configs';
 import { DatabaseConfig } from '../database/config';
 
-export const CONFIG_PROVIDERS = [AuthConfig, DatabaseConfig];
+export const CONFIG_MODULE_PROVIDERS = [AuthConfig, DatabaseConfig];
 
 @Global()
 @Module({
   imports: [],
-  exports: [...CONFIG_PROVIDERS],
-  providers: [...CONFIG_PROVIDERS],
+  exports: [...CONFIG_MODULE_PROVIDERS],
+  providers: [...CONFIG_MODULE_PROVIDERS],
 })
 export class ConfigurationModule {}
