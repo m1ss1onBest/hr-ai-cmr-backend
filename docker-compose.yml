@@ -8,11 +8,11 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: hrcrm_db 
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U hrcrm -d hrcrm_db']
       interval: 5s
       timeout: 5s
       retries: 5
