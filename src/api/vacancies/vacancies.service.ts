@@ -1,31 +1,30 @@
-import {Injectable} from '@nestjs/common';
-import { CreateVacancyDto } from './dto/create-vacancy.dto';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateVacancyDto, UpdateVacancyDto } from './dto';
+import { VacansiesRepository } from 'src/shared/infrastructure/database/repositories/vacancies.repository';
 @Injectable()
-export class VacanciesService{
-    create (dto: CreateVacancyDto){
-        //TODO:
-        return {message: 'Vacancy created successfully',...dto } 
-    }
+export class VacanciesService {
+  constructor(private readonly vacanciesRepo: VacansiesRepository) {}
+  async create(dto: CreateVacancyDto) {
+    return await this.vacanciesRepo.create(dto);
+  }
 
-    findAll(){
-        //TODO:
-        return[];
-    }
+  async findAll() {
+    return await this.vacanciesRepo.findAll();
+  }
 
-    findOne(id: string){
-        //TODO:
-        return {id }
-    }
+  async findOne(id: string) {
+    const vacancy = await this.vacanciesRepo.findOneById(id);
+    if (!vacancy) throw new NotFoundException(`Vacancy ${id} not found`);
+    return vacancy;
+  }
 
-    update(id: string, dto: CreateVacancyDto){
-        //TODO:
-        return {id, ...dto}
-    }
+  async update(id: string, dto: UpdateVacancyDto) {
+    await this.findOne(id);
+    return await this.vacanciesRepo.update(id, dto);
+  }
 
-    remove(id: string){
-        //TODO:
-        return {id,deleted: true , massage: 'Vacancy deleted successfully'}
-    }
-
+  async remove(id: string) {
+    await this.findOne(id);
+    return await this.vacanciesRepo.remove(id);
+  }
 }

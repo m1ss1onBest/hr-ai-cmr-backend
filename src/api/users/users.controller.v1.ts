@@ -11,7 +11,5 @@ export class UsersControllerV1 {
     return (await this.usersRepo.findOneById(id)) ?? {};
   }
 
-  async test() {
-
-  }
+  async test() {}
 }
