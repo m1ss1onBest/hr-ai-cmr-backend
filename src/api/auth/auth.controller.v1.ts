@@ -1,24 +1,13 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { RegisterUserRequest, RegisterUserResponse } from './dto/register.dto';
-import { IRegisterUseCase } from './use-cases/register/register.interface';
-import { JwtAuthGuard } from './modules/guards/jwt-auth.guard';
+import { Body, Controller, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { RegisterDto } from './dto';
 
-@Controller('/v1/auth')
+@Controller('auth')
 export class AuthControllerV1 {
-  constructor(private readonly registerUseCase: IRegisterUseCase) {}
+  constructor(private readonly authService: AuthService) {}
 
-  // All busines logic is stored in register use case instead of services now
-  @Post('/register')
-  @UseGuards(JwtAuthGuard)
-  async registerUser(
-    @Body() request: RegisterUserRequest,
-  ): Promise<RegisterUserResponse> {
-    return await this.registerUseCase.run(request);
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
-
-  // Some example methods
-  loginUser() {}
-  logoutUser() {}
-  verifyUser() {}
-  forgotPassword() {}
 }

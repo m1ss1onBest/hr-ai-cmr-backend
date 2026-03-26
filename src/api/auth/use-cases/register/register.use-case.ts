@@ -1,3 +1,4 @@
+export {};
 import { Injectable } from '@nestjs/common';
 import { IRegisterUseCase } from './register.interface';
 import { RegisterUserRequest, RegisterUserResponse } from '../../dto/';
