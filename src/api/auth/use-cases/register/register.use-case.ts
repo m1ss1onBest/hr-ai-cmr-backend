@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IRegisterUseCase } from './register.interface';
-import {
-  RegisterUserRequest,
-  RegisterUserResponse,
-} from '../../dto/register.dto';
+import { RegisterUserRequest, RegisterUserResponse } from '../../dto/';
 import { UsersRepository } from 'src/shared/infrastructure/database/repositories/users.repository';
 
 @Injectable()
