@@ -11,6 +11,7 @@ model User {
   // id       String   @id @default(uuid())
   id       String   @id @default(uuid())
   email    String   @unique @db.VarChar(255)
+  name     String   @db.VarChar(255)
   password String
   role     UserRole @default(HR)
 

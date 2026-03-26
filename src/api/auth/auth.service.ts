@@ -29,6 +29,7 @@ export class AuthService {
 
     const user = await this.usersRepo.create({
       email: dto.email,
+      name: dto.name,
       password: passwordHash,
       role: UserRole.HR,
     });
@@ -62,7 +63,9 @@ export class AuthService {
       role: user.role,
     });
 
-    const { password: _password, ...safeUser } = user;
+    // omit password field
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...safeUser } = user;
 
     return { token, user: safeUser };
   }
