@@ -13,3 +13,6 @@ export class RegisterDto {
   @MinLength(8)
   password!: string;
 }
+export class RegisterUserRequest {}
+
+export class RegisterUserResponse {}

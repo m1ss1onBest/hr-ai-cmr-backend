@@ -1,41 +1,32 @@
 import { Module } from '@nestjs/common';
+import { AuthConfig } from './modules/configs';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { JWT_TOKENS_SERVICE_PROVIDER } from './modules/jwt/jwt.interface';
 import { AuthControllerV1 } from './auth.controller.v1';
 import { AuthService } from './auth.service';
+import { REGISTER_USE_CASE_PROVIDER } from './use-cases/register/register.interface';
+import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+
+export const AUTH_MODULE_PROVIDERS = [
+  JWT_TOKENS_SERVICE_PROVIDER,
+  REGISTER_USE_CASE_PROVIDER,
+];
 
 @Module({
   imports: [
-    DatabaseModule,
     JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const secret =
-          config.get<string>('JWT_SECRET') ??
-          config.get<string>('ACCESS_TOKEN_SECRET') ??
-          'dev-secret';
-
-        const expiresRaw =
-          config.get<string>('JWT_EXPIRES_IN') ??
-          config.get<string>('ACCESS_TOKEN_EXPIRATION');
-
-        const expiresInSeconds = expiresRaw
-          ? Number(expiresRaw)
-          : 60 * 60 * 24 * 7;
-
-        return {
-          secret,
-          signOptions: {
-            expiresIn: Number.isFinite(expiresInSeconds)
-              ? expiresInSeconds
-              : 60 * 60 * 24 * 7,
-          },
-        };
-      },
+      inject: [AuthConfig],
+      useFactory: (config: AuthConfig) => ({
+        secret: config.ACCESS_TOKEN_SECRET,
+        signOptions: {
+          expiresIn: config.ACCESS_TOKEN_EXPIRATION,
+        },
+      }),
     }),
+    DatabaseModule,
   ],
   controllers: [AuthControllerV1],
+  exports: [...AUTH_MODULE_PROVIDERS],
   providers: [AuthService],
 })
 export class AuthModule {}

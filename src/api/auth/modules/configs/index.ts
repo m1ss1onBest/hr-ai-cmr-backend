@@ -1,3 +1,4 @@
+export * from './auth.config';
 import { Injectable } from '@nestjs/common';
 import { IsNotEmpty } from 'class-validator';
 import { Config } from '../../../../shared/infrastructure/config';
