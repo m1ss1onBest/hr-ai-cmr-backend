@@ -26,7 +26,7 @@ export const AUTH_MODULE_PROVIDERS = [
     DatabaseModule,
   ],
   controllers: [AuthControllerV1],
+  providers: [AuthService, ...AUTH_MODULE_PROVIDERS],
   exports: [...AUTH_MODULE_PROVIDERS],
-  providers: [AuthService],
 })
 export class AuthModule {}
