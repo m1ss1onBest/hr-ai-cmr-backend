@@ -21,7 +21,7 @@ export class PrismaService
     super({ adapter });
   }
 
-  async healthCheck() {
+  private async healthCheck() {
     await this.$queryRaw`SELECT 1`;
   }
 
