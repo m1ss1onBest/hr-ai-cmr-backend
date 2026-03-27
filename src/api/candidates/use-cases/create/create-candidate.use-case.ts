@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ICreateCandidateUseCase } from './create-candidate.interface';
 import {
   CreateCandidateRequest,
@@ -6,16 +6,27 @@ import {
 } from '../../dto/create.candidate.dto';
 import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
 import { Candidate } from 'src/shared/domain/users/candidate.entity';
+import { HandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
 
 @Injectable()
 export class CreateCandidateUseCase implements ICreateCandidateUseCase {
-  constructor(private readonly candidates: CandidatesRepository) {}
+  constructor(
+    private readonly logger: HandlerLogger,
+    private readonly candidatesRepo: CandidatesRepository,
+  ) {
+    logger.setContext(CreateCandidateUseCase.name);
+  }
 
   async run(request: CreateCandidateRequest): Promise<CreateCandidateResponse> {
-    const candidateResult = await this.candidates.create(request);
-    if (!candidateResult) {
-      throw new BadRequestException('Failed to create candidate');
+    try {
+      const candidate = await this.candidatesRepo.create(request);
+      this.logger.log(
+        `Candidate created | id=${candidate.id} | name=${candidate.name}`,
+      );
+
+      return new Candidate(candidate);
+    } catch (err) {
+      this.logger.badRequest('Failed to create candidate', err);
     }
-    return new Candidate(candidateResult);
   }
 }

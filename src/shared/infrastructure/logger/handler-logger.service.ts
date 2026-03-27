@@ -1,0 +1,54 @@
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+
+type HttpExceptionConstructor = new (message: string) => any;
+
+@Injectable()
+export class HandlerLogger extends Logger {
+  constructor(context: string) {
+    super(context);
+  }
+
+  setContext(ctx?: string) {
+    this.context = ctx;
+  }
+
+  logAndThrow(
+    ExceptionCtor: HttpExceptionConstructor,
+    msg: string,
+    err?: any,
+  ): never {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const errorMessage = `${msg}${err ? ` - ${err.message || err}` : ''}`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.error(errorMessage, err?.stack ?? err);
+    throw new ExceptionCtor(msg);
+  }
+
+  badRequest(msg: string, err?: any): never {
+    return this.logAndThrow(BadRequestException, msg, err);
+  }
+
+  notFound(msg: string, err?: any): never {
+    return this.logAndThrow(NotFoundException, msg, err);
+  }
+
+  unauthorized(msg: string, err?: any): never {
+    return this.logAndThrow(UnauthorizedException, msg, err);
+  }
+
+  forbidden(msg: string, err?: any): never {
+    return this.logAndThrow(ForbiddenException, msg, err);
+  }
+
+  internal(msg: string, err?: any): never {
+    return this.logAndThrow(InternalServerErrorException, msg, err);
+  }
+}
