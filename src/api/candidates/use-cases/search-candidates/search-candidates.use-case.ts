@@ -5,7 +5,7 @@ import {
   SearchCandidatesPaginatedResponse,
 } from '../../dto/search.candidates.dto';
 import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
-import { Candidate } from 'src/shared/domain/users/candidate.entity';
+import { Candidate } from 'src/shared/domain/candidates/candidate.entity';
 
 @Injectable()
 export class SearchCandidatesUseCase implements ISearchCandidatesUseCase {
