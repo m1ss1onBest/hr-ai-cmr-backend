@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
 import { Candidate } from 'src/shared/domain/candidates/candidate.entity';
-import { HandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
+import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
 import { IUpdateCandidateUseCase } from './update-candidate.interface';
 
 @Injectable()
 export class UpdateCandidateUseCase implements IUpdateCandidateUseCase {
   constructor(
-    private readonly logger: HandlerLogger,
+    private readonly logger: EventHandlerLogger,
     private readonly candidatesRepo: CandidatesRepository,
   ) {
     logger.setContext(UpdateCandidateUseCase.name);

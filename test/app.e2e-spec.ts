@@ -103,7 +103,7 @@ describe('Auth (e2e)', () => {
 
     await request(app.getHttpServer())
       .post('/api/auth/register')
-      .send({ name: 'Іван', email: 'new@example.com', password: 'password123' })
+      .send({ name: 'Іван', email: 'new@example.com', password: '!Password1' })
       .expect(201);
 
     const firstCallArg = prisma.user.create.mock.calls[0]?.[0] as {

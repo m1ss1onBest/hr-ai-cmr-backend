@@ -1,5 +1,4 @@
-export {};
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ILoginUseCase } from './login.interface';
 import { UsersRepository } from 'src/shared/infrastructure/database/repositories/users.repository';
 import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
@@ -22,16 +21,13 @@ export class LoginUseCase implements ILoginUseCase {
     const user = await this.usersRepo.findOneByEmail(request.email);
 
     if (!user) {
-      this.event.badRequest('Failed to login user. Wrong email or password.');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const passwordVerificaionRes = await bcrypt.compare(
-      request.password,
-      user.password,
-    );
+    const ok = await bcrypt.compare(request.password, user.password);
 
-    if (!passwordVerificaionRes) {
-      this.event.badRequest('Failed to login user. Wrong email or password.');
+    if (!ok) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const accessToken = await this.jwtService.generateAccessToken({
