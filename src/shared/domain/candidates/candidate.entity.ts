@@ -5,8 +5,8 @@ export interface ICandidateData {
   name: string;
   cvUrl: string;
   expectedSalary: string;
-  currentStatus: string;
-  position: string;
+  positionId: string;
+  position?: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
@@ -17,8 +17,8 @@ export class Candidate implements ICandidateData {
   name: string;
   cvUrl: string;
   expectedSalary: string;
-  currentStatus: string;
-  position: string;
+  positionId: string;
+  position?: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;

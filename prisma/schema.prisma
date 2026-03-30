@@ -5,27 +5,20 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  // id       String   @id @default(uuid())
-  id       String   @id @default(uuid())
-  email    String   @unique @db.VarChar(255)
-  name     String   @db.VarChar(255)
-  password String
-  role     UserRole @default(HR)
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  deletedAt DateTime?
-
-  vacancies       Vacancy[]
+  id              String          @id @default(uuid())
+  email           String          @unique @db.VarChar(255)
+  password        String
+  role            UserRole        @default(HR)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @default(now()) @updatedAt
+  deletedAt       DateTime?
+  name            String          @db.VarChar(255)
   statusHistories StatusHistory[]
-}
-
-enum UserRole {
-  ADMIN
-  HR
+  vacancies       Vacancy[]
 }
 
 model Candidate {
@@ -33,26 +26,72 @@ model Candidate {
   name                 String                @db.VarChar(255)
   cvUrl                String
   expectedSalary       String                @db.VarChar(255)
-  position             String
-  currentStatus        CandidateStatus       @default(NEW)
-  statusHistories      StatusHistory[]
-  applications         Application[]
+  positionId           String
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @default(now()) @updatedAt
   deletedAt            DateTime?
+  applications         Application[]
+  Position             Position              @relation(fields: [positionId], references: [id])
   candidateCredentials CandidateCredential[]
+  statusHistories      StatusHistory[]
 }
 
 model StatusHistory {
   id            String          @id @default(uuid())
-  candidate     Candidate       @relation(fields: [candidateId], references: [id])
   candidateId   String
   status        CandidateStatus
-  changedBy     User            @relation(fields: [changedById], references: [id])
   changedById   String
-  application   Application?    @relation(fields: [applicationId], references: [id])
   applicationId String?
   createdAt     DateTime
+  application   Application?    @relation(fields: [applicationId], references: [id])
+  candidate     Candidate       @relation(fields: [candidateId], references: [id])
+  changedBy     User            @relation(fields: [changedById], references: [id])
+}
+
+model CandidateCredential {
+  id          String      @id @default(uuid())
+  candidateId String
+  type        ContactType
+  value       String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now()) @updatedAt
+  deletedAt   DateTime?
+  candidate   Candidate   @relation(fields: [candidateId], references: [id])
+}
+
+model Vacancy {
+  id           String        @id @default(uuid())
+  createdById  String
+  title        String        @db.VarChar(255)
+  description  String
+  salary       String?
+  /// Array of candidate requirements
+  requirements Json
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
+  applications Application[]
+  createdBy    User          @relation(fields: [createdById], references: [id])
+}
+
+model Application {
+  id          String          @id @default(uuid())
+  candidateId String
+  vacancyId   String
+  createdAt   DateTime        @default(now())
+  candidate   Candidate       @relation(fields: [candidateId], references: [id])
+  vacancy     Vacancy         @relation(fields: [vacancyId], references: [id])
+  statuses    StatusHistory[]
+}
+
+model Position {
+  id        String      @id
+  name      String      @unique @db.VarChar(255)
+  Candidate Candidate[]
+}
+
+enum UserRole {
+  ADMIN
+  HR
 }
 
 enum CandidateStatus {
@@ -65,50 +104,8 @@ enum CandidateStatus {
   REJECTED
 }
 
-model CandidateCredential {
-  id          String      @id @default(uuid())
-  candidateId String
-  candidate   Candidate   @relation(fields: [candidateId], references: [id])
-  type        ContactType
-  value       String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @default(now()) @updatedAt
-  deletedAt   DateTime?
-}
-
 enum ContactType {
   PHONE
   EMAIL
   LINKEDIN
-}
-
-// model Position {
-//   id         String      @id @default(uuid())
-//   name       String      @unique @db.VarChar(255)
-//   candidates Candidate[]
-// }
-
-model Vacancy {
-  id           String        @id @default(uuid())
-  createdById  String
-  createdBy    User          @relation(fields: [createdById], references: [id])
-  title        String        @db.VarChar(255)
-  description  String
-  salary       String?
-  /// Array of candidate requirements
-  requirements Json
-  applications Application[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @default(now()) @updatedAt
-}
-
-model Application {
-  id          String    @id @default(uuid())
-  candidate   Candidate @relation(fields: [candidateId], references: [id])
-  candidateId String
-  vacancy     Vacancy   @relation(fields: [vacancyId], references: [id])
-  vacancyId   String
-  createdAt   DateTime  @default(now())
-
-  statuses StatusHistory[]
 }

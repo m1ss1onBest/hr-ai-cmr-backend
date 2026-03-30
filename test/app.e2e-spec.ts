@@ -8,6 +8,16 @@ import { PrismaService } from '../src/shared/infrastructure/database/prisma.serv
 describe('Auth (e2e)', () => {
   let app: INestApplication<App>;
 
+  type PrismaMock = {
+    user: {
+      findUnique: jest.MockedFunction<(args: unknown) => Promise<unknown>>;
+      create: jest.MockedFunction<(args: unknown) => Promise<unknown>>;
+    };
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const getPrismaMock = () => app.get(PrismaService) as unknown as PrismaMock;
+
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -17,8 +27,10 @@ describe('Auth (e2e)', () => {
         $connect: () => Promise.resolve(),
         $disconnect: () => Promise.resolve(),
         user: {
-          findUnique: () => Promise.resolve(null),
-          create: () => Promise.reject(new Error('Not implemented in test')),
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest
+            .fn()
+            .mockRejectedValue(new Error('Not implemented in test')),
         },
       })
       .compile();
@@ -52,10 +64,10 @@ describe('Auth (e2e)', () => {
   it('/api/auth/login (POST) -> 401 when password invalid', async () => {
     const bcrypt = await import('bcryptjs');
 
-    // Override with a user that exists, but has a different password hash
     const existingUser = {
       id: 'u_1',
       email: 'user@example.com',
+      name: 'John',
       password: await bcrypt.default.hash('correct-password', 10),
       role: 'HR',
       createdAt: new Date(),
@@ -63,8 +75,9 @@ describe('Auth (e2e)', () => {
       deletedAt: null,
     };
 
-    const prisma = app.get(PrismaService);
-    (prisma.user.findUnique as any) = () => Promise.resolve(existingUser);
+    const prisma = getPrismaMock();
+
+    prisma.user.findUnique.mockResolvedValue(existingUser);
 
     await request(app.getHttpServer())
       .post('/api/auth/login')
@@ -73,9 +86,11 @@ describe('Auth (e2e)', () => {
   });
 
   it('/api/auth/register (POST) -> 201 and passes name to DB create', async () => {
-    const prisma = app.get(PrismaService);
+    const prisma = getPrismaMock();
 
-    const createSpy = jest.fn().mockResolvedValue({
+    prisma.user.findUnique.mockResolvedValue(null);
+
+    prisma.user.create.mockResolvedValue({
       id: 'u_1',
       email: 'new@example.com',
       name: 'Іван',
@@ -86,21 +101,16 @@ describe('Auth (e2e)', () => {
       deletedAt: null,
     });
 
-    (prisma.user.findUnique as any) = () => Promise.resolve(null);
-    (prisma.user.create as any) = createSpy;
-
     await request(app.getHttpServer())
       .post('/api/auth/register')
       .send({ name: 'Іван', email: 'new@example.com', password: 'password123' })
       .expect(201);
 
-    expect(createSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          name: 'Іван',
-          email: 'new@example.com',
-        }),
-      }),
-    );
+    const firstCallArg = prisma.user.create.mock.calls[0]?.[0] as {
+      data: { name: string; email: string };
+    };
+
+    expect(firstCallArg.data.name).toBe('Іван');
+    expect(firstCallArg.data.email).toBe('new@example.com');
   });
 });

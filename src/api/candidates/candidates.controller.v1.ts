@@ -1,13 +1,14 @@
 import {
-  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
+  Inject,
   Param,
   Post,
+  Put,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CandidateBaseResponse } from './dto/candidate.base-response';
@@ -22,19 +23,34 @@ import {
   SearchCandidatesQuery,
 } from './dto/search.candidates.dto';
 import { ISearchCandidatesUseCase } from './use-cases/search-candidates/search-candiadtes.interface';
-import { ApiResponse } from '@nestjs/swagger';
+import {
+  UpdateCandidateRequest,
+  UpdateCandidateResponse,
+} from './dto/update.candidate.dto';
+import { IUpdateCandidateUseCase } from './use-cases/update-candidate/update-candidate.interface';
+import { IDeleteCandidateUseCase } from './use-cases/delete-candidate/delete-candidate.interface';
+import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
+import { ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
-import { AuthRequest } from '../auth/modules/guards/auth-request.interface';
 
 @Controller({
   version: '1',
   path: 'candidates',
 })
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class CandidatesControllerV1 {
   constructor(
     private readonly getCandidate: IGetCandidateUseCase,
     private readonly createCandidate: ICreateCandidateUseCase,
     private readonly searchCandidates: ISearchCandidatesUseCase,
+    @Inject(IUpdateCandidateUseCase)
+    private readonly updateCandidate: IBaseUseCase<
+      UpdateCandidateRequest & { id: string },
+      UpdateCandidateResponse
+    >,
+    @Inject(IDeleteCandidateUseCase)
+    private readonly deleteCandidate: IBaseUseCase<{ id: string }, unknown>,
   ) {}
 
   @Get(':id')
@@ -48,16 +64,12 @@ export class CandidatesControllerV1 {
     status: 404,
     description: 'Candidate not found',
   })
-  @UseGuards(JwtAuthGuard)
-  async getOneById(
-    @Param('id') id: string,
-    @Req() req: AuthRequest,
-  ): Promise<CandidateBaseResponse> {
-    throw new BadRequestException(req);
+  async getOneById(@Param('id') id: string): Promise<CandidateBaseResponse> {
     return await this.getCandidate.run(id);
   }
 
   @Get()
+  @HttpCode(200)
   async getCandidates(
     @Query() query: SearchCandidatesQuery,
   ): Promise<SearchCandidatesPaginatedResponse> {
@@ -65,9 +77,90 @@ export class CandidatesControllerV1 {
   }
 
   @Post()
+  @HttpCode(201)
   async create(
     @Body() request: CreateCandidateRequest,
   ): Promise<CreateCandidateResponse> {
     return await this.createCandidate.run(request);
+  }
+
+  @Put(':id')
+  @HttpCode(200)
+  @ApiResponse({ status: 200, description: 'Candidate updated' })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  async update(
+    @Param('id') id: string,
+    @Body() request: UpdateCandidateRequest,
+  ): Promise<UpdateCandidateResponse> {
+    return await this.updateCandidate.run({ id, ...request });
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiResponse({ status: 204, description: 'Candidate deleted (soft)' })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.deleteCandidate.run({ id });
+  }
+}
+
+/**
+ * Backward-compatible alias routes without URI version prefix.
+ * With global prefix `api`, this exposes: /api/candidates
+ */
+@Controller({
+  path: 'candidates',
+})
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class CandidatesController {
+  constructor(
+    private readonly getCandidate: IGetCandidateUseCase,
+    private readonly createCandidate: ICreateCandidateUseCase,
+    private readonly searchCandidates: ISearchCandidatesUseCase,
+    @Inject(IUpdateCandidateUseCase)
+    private readonly updateCandidate: IBaseUseCase<
+      UpdateCandidateRequest & { id: string },
+      UpdateCandidateResponse
+    >,
+    @Inject(IDeleteCandidateUseCase)
+    private readonly deleteCandidate: IBaseUseCase<{ id: string }, unknown>,
+  ) {}
+
+  @Get(':id')
+  @HttpCode(200)
+  async getOneById(@Param('id') id: string): Promise<CandidateBaseResponse> {
+    return await this.getCandidate.run(id);
+  }
+
+  @Get()
+  @HttpCode(200)
+  async getCandidates(
+    @Query() query: SearchCandidatesQuery,
+  ): Promise<SearchCandidatesPaginatedResponse> {
+    return await this.searchCandidates.run(query);
+  }
+
+  @Post()
+  @HttpCode(201)
+  async create(
+    @Body() request: CreateCandidateRequest,
+  ): Promise<CreateCandidateResponse> {
+    return await this.createCandidate.run(request);
+  }
+
+  @Put(':id')
+  @HttpCode(200)
+  async update(
+    @Param('id') id: string,
+    @Body() request: UpdateCandidateRequest,
+  ): Promise<UpdateCandidateResponse> {
+    return await this.updateCandidate.run({ id, ...request });
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.deleteCandidate.run({ id });
   }
 }
