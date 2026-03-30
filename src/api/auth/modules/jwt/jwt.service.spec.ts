@@ -1,7 +1,11 @@
-process.env.ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? 'access_secret';
-process.env.ACCESS_TOKEN_EXPIRATION = process.env.ACCESS_TOKEN_EXPIRATION ?? '15m';
-process.env.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET ?? 'refresh_secret';
-process.env.REFRESH_TOKEN_EXPIRATION = process.env.REFRESH_TOKEN_EXPIRATION ?? '7d';
+process.env.ACCESS_TOKEN_SECRET =
+  process.env.ACCESS_TOKEN_SECRET ?? 'access_secret';
+process.env.ACCESS_TOKEN_EXPIRATION =
+  process.env.ACCESS_TOKEN_EXPIRATION ?? '15m';
+process.env.REFRESH_TOKEN_SECRET =
+  process.env.REFRESH_TOKEN_SECRET ?? 'refresh_secret';
+process.env.REFRESH_TOKEN_EXPIRATION =
+  process.env.REFRESH_TOKEN_EXPIRATION ?? '7d';
 
 import { JwtService } from '@nestjs/jwt';
 import { JwtTokensService } from './jwt.service';
@@ -78,7 +82,8 @@ describe('JwtTokensService', () => {
     expect(token).toBe('refresh_token');
     expect(typeof jti).toBe('string');
     expect(mockJwtService.signAsync).toHaveBeenCalledTimes(1);
-    const [callPayload, callOptions] = mockJwtService.signAsync.mock.calls[0] as unknown as [
+    const [callPayload, callOptions] = mockJwtService.signAsync.mock
+      .calls[0] as unknown as [
       { sub: string; email: string; jti: string },
       { secret: string; expiresIn: string },
     ];

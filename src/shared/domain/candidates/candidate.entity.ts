@@ -3,8 +3,12 @@ import { CandidateModel } from 'prisma/generated/models';
 export interface ICandidateData {
   id: string;
   name: string;
-  cvUrl: string;
-  expectedSalary: string;
+  email: string;
+  phone?: string;
+  linkedInUrl?: string;
+  comment?: string;
+  cvUrl?: string;
+  expectedSalary?: string;
   positionId: string;
   position?: string;
   createdAt: Date;
@@ -15,8 +19,12 @@ export interface ICandidateData {
 export class Candidate implements ICandidateData {
   id: string;
   name: string;
-  cvUrl: string;
-  expectedSalary: string;
+  email: string;
+  phone?: string;
+  linkedInUrl?: string;
+  comment?: string;
+  cvUrl?: string;
+  expectedSalary?: string;
   positionId: string;
   position?: string;
   createdAt: Date;

@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -24,8 +23,12 @@ model User {
 model Candidate {
   id                   String                @id @default(uuid())
   name                 String                @db.VarChar(255)
-  cvUrl                String
-  expectedSalary       String                @db.VarChar(255)
+  email                String                @unique @db.VarChar(255)
+  phone                String?               @db.VarChar(50)
+  linkedInUrl          String?               @db.VarChar(2048)
+  comment              String?
+  cvUrl                String?
+  expectedSalary       String?               @db.VarChar(255)
   positionId           String
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @default(now()) @updatedAt

@@ -11,6 +11,7 @@ import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 import { JwtRefreshTokenStore } from './modules/jwt/jwt-refresh.store';
 import { JwtAuthGuard } from './modules/guards/jwt-auth.guard';
 import { JwtAuthMiddleware } from './modules/guards/jwt-auth.middleware';
+import { RolesGuard } from './modules/guards/roles.guard';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { JwtAuthMiddleware } from './modules/guards/jwt-auth.middleware';
     JwtRefreshTokenStore,
     JwtAuthGuard,
     JwtAuthMiddleware,
+    RolesGuard,
     REGISTER_USE_CASE_PROVIDER,
     LOGIN_USE_CASE_PROVIDER,
   ],
@@ -41,6 +43,7 @@ import { JwtAuthMiddleware } from './modules/guards/jwt-auth.middleware';
     JwtRefreshTokenStore,
     JwtAuthGuard,
     JwtAuthMiddleware,
+    RolesGuard,
     REGISTER_USE_CASE_PROVIDER,
     LOGIN_USE_CASE_PROVIDER,
   ],

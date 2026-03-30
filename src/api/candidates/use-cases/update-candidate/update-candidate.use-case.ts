@@ -16,6 +16,10 @@ export class UpdateCandidateUseCase implements IUpdateCandidateUseCase {
   async run(request: {
     id: string;
     name?: string;
+    email?: string;
+    phone?: string;
+    linkedInUrl?: string;
+    comment?: string;
     position?: string;
     expectedSalary?: string;
     cvUrl?: string;

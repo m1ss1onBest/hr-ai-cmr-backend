@@ -14,7 +14,7 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/shared/infrastructure/database/prisma.service';
 
-describe('Candidates (e2e)', () => {
+describe('Candidates create validation (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
@@ -29,9 +29,14 @@ describe('Candidates (e2e)', () => {
         candidate: {
           create: jest.fn(),
           findUnique: jest.fn(),
+          findFirst: jest.fn(),
           findMany: jest.fn(),
           count: jest.fn(),
           update: jest.fn(),
+        },
+        position: {
+          findUnique: jest.fn(),
+          create: jest.fn(),
         },
         user: {
           findUnique: jest.fn(),
@@ -52,14 +57,12 @@ describe('Candidates (e2e)', () => {
     await app.init();
   });
 
-  it('POST /api/v1/candidates -> 401 without token', async () => {
+  it('POST /api/v1/candidates -> 401 without token (auth guard)', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/candidates')
       .send({
         name: 'John Doe',
         email: 'john.doe@example.com',
-        cvUrl: 'https://example.com/cv.pdf',
-        expectedSalary: '1500 USD',
         position: 'Frontend Developer',
       })
       .expect(401);
