@@ -5,7 +5,7 @@ import {
   CreateCandidateResponse,
 } from '../../dto/create.candidate.dto';
 import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
-import { Candidate } from 'src/shared/domain/users/candidate.entity';
+import { Candidate } from 'src/shared/domain/candidates/candidate.entity';
 import { HandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
 
 @Injectable()

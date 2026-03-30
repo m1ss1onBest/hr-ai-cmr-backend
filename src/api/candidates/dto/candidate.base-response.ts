@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsUUID } from 'class-validator';
 import { CandidateStatus } from 'prisma/generated/enums';
-import { ICandidateData } from 'src/shared/domain/users/candidate.entity';
+import { ICandidateData } from 'src/shared/domain/candidates/candidate.entity';
 
 export class CandidateBaseResponse implements ICandidateData {
   @IsUUID()

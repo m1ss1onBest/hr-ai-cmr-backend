@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IGetCandidateUseCase } from './get-candidate.interface';
-import { Candidate } from 'src/shared/domain/users/candidate.entity';
+import { Candidate } from 'src/shared/domain/candidates/candidate.entity';
 import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
 import { CandidateBaseResponse } from '../../dto/candidate.base-response';
 
