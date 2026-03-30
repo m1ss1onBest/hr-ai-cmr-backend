@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { ICreateCandidateUseCase } from './create-candidate.interface';
 import {
   CreateCandidateRequest,
@@ -26,6 +26,9 @@ export class CreateCandidateUseCase implements ICreateCandidateUseCase {
 
       return new Candidate(candidate);
     } catch (err) {
+      if (err instanceof ConflictException) {
+        this.logger.conflict(err.message, err);
+      }
       this.logger.badRequest('Failed to create candidate', err);
     }
   }

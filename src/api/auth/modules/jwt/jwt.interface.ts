@@ -16,8 +16,12 @@ export abstract class IJwtTokensService {
   abstract generateAccessToken(payload: IJwtPayload): Promise<string>;
   abstract verifyAccessToken(token: string): Promise<IJwtPayload | null>;
 
-  abstract generateRefreshToken(payload: IJwtPayload): Promise<{ token: string; jti: string }>;
-  abstract verifyRefreshToken(token: string): Promise<IJwtRefreshPayload | null>;
+  abstract generateRefreshToken(
+    payload: IJwtPayload,
+  ): Promise<{ token: string; jti: string }>;
+  abstract verifyRefreshToken(
+    token: string,
+  ): Promise<IJwtRefreshPayload | null>;
 }
 
 export const JWT_TOKENS_SERVICE_PROVIDER: Provider = {

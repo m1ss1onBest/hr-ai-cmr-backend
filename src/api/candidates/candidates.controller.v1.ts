@@ -32,12 +32,15 @@ import { IDeleteCandidateUseCase } from './use-cases/delete-candidate/delete-can
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
 import { ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/modules/guards/roles.guard';
+import { Roles } from '../auth/modules/guards/roles.decorator';
+import { UserRole } from 'prisma/generated/enums';
 
 @Controller({
   version: '1',
   path: 'candidates',
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard as unknown as new (...args: any[]) => any, RolesGuard as unknown as new (...args: any[]) => any)
 @ApiBearerAuth()
 export class CandidatesControllerV1 {
   constructor(
@@ -77,6 +80,7 @@ export class CandidatesControllerV1 {
   }
 
   @Post()
+  @Roles(UserRole.HR)
   @HttpCode(201)
   async create(
     @Body() request: CreateCandidateRequest,
@@ -85,6 +89,7 @@ export class CandidatesControllerV1 {
   }
 
   @Put(':id')
+  @Roles(UserRole.HR)
   @HttpCode(200)
   @ApiResponse({ status: 200, description: 'Candidate updated' })
   @ApiResponse({ status: 404, description: 'Candidate not found' })
@@ -96,6 +101,7 @@ export class CandidatesControllerV1 {
   }
 
   @Delete(':id')
+  @Roles(UserRole.HR)
   @HttpCode(204)
   @ApiResponse({ status: 204, description: 'Candidate deleted (soft)' })
   @ApiResponse({ status: 404, description: 'Candidate not found' })
@@ -111,7 +117,7 @@ export class CandidatesControllerV1 {
 @Controller({
   path: 'candidates',
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard as unknown as new (...args: any[]) => any, RolesGuard as unknown as new (...args: any[]) => any)
 @ApiBearerAuth()
 export class CandidatesController {
   constructor(
@@ -142,6 +148,7 @@ export class CandidatesController {
   }
 
   @Post()
+  @Roles(UserRole.HR)
   @HttpCode(201)
   async create(
     @Body() request: CreateCandidateRequest,
@@ -150,6 +157,7 @@ export class CandidatesController {
   }
 
   @Put(':id')
+  @Roles(UserRole.HR)
   @HttpCode(200)
   async update(
     @Param('id') id: string,
@@ -159,6 +167,7 @@ export class CandidatesController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.HR)
   @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
     await this.deleteCandidate.run({ id });

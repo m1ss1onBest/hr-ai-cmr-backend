@@ -18,7 +18,9 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<AuthRequest & { cookies?: Record<string, string> }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<AuthRequest & { cookies?: Record<string, string> }>();
 
     // Prefer httpOnly cookie
     const cookieToken = request.cookies?.[ACCESS_TOKEN_COOKIE_NAME];
@@ -29,7 +31,10 @@ export class JwtAuthGuard implements CanActivate {
     let headerToken: string | undefined;
 
     if (headersObj && typeof headersObj === 'object') {
-      const record = headersObj as Record<string, string | string[] | undefined>;
+      const record = headersObj as Record<
+        string,
+        string | string[] | undefined
+      >;
       const authHeader = record['authorization'] ?? record['Authorization'];
       if (authHeader) {
         const [bearer, token] = String(authHeader).split(' ') ?? [];
@@ -49,7 +54,9 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAccessToken(token);
 
       if (!payload) {
-        throw new UnauthorizedException('Invalid or expired authorization token');
+        throw new UnauthorizedException(
+          'Invalid or expired authorization token',
+        );
       }
 
       const user = await this.usersRepo.findOneById(payload.sub);

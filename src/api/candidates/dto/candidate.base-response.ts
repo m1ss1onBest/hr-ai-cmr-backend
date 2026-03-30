@@ -18,16 +18,51 @@ export class CandidateBaseResponse implements ICandidateData {
   name: string;
 
   @ApiProperty({
+    description: 'Candidate email (unique)',
+    example: 'john.doe@example.com',
+  })
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description: 'Candidate phone number',
+    example: '+380991112233',
+  })
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description: 'LinkedIn profile URL',
+    example: 'https://www.linkedin.com/in/john-doe/',
+  })
+  linkedInUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description: 'Additional comment',
+    example: 'Strong DevOps background, referred by ...',
+  })
+  comment?: string;
+
+  @ApiProperty({
+    required: false,
     description: 'CV file url',
     example: 'https://cv.storage.domain/jonh-cv.pdf',
   })
-  cvUrl: string;
+  cvUrl?: string;
 
   @ApiProperty({
+    required: false,
     description: 'Expected salary value',
     example: '4600 USD',
   })
-  expectedSalary: string;
+  expectedSalary?: string;
 
   @ApiProperty({
     description: 'Candidate position id',

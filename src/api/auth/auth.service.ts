@@ -48,9 +48,8 @@ export class AuthService {
     };
 
     const accessToken = await this.jwtService.generateAccessToken(payload);
-    const { token: refreshToken } = await this.jwtService.generateRefreshToken(
-      payload,
-    );
+    const { token: refreshToken } =
+      await this.jwtService.generateRefreshToken(payload);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user;
@@ -81,9 +80,8 @@ export class AuthService {
     };
 
     const accessToken = await this.jwtService.generateAccessToken(payload);
-    const { token: refreshToken } = await this.jwtService.generateRefreshToken(
-      payload,
-    );
+    const { token: refreshToken } =
+      await this.jwtService.generateRefreshToken(payload);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user;

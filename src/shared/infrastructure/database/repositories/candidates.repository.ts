@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { IBaseUserRepository as IBaseRepository } from '../../../contracts/use-cases/base.repository';
 import { Candidate as CandidateModel, Prisma } from 'prisma/generated/client';
 import { CreateCandidateRequest } from 'src/api/candidates/dto/create.candidate.dto';
@@ -7,7 +11,17 @@ import { PaginatedResponse } from 'src/shared/contracts/dto/pagination.dto';
 import * as crypto from 'crypto';
 
 export type UpdateCandidateRequest = Partial<
-  Pick<CreateCandidateRequest, 'name' | 'expectedSalary' | 'cvUrl' | 'position'>
+  Pick<
+    CreateCandidateRequest,
+    | 'name'
+    | 'email'
+    | 'phone'
+    | 'linkedInUrl'
+    | 'comment'
+    | 'expectedSalary'
+    | 'cvUrl'
+    | 'position'
+  >
 >;
 
 @Injectable()
@@ -33,15 +47,32 @@ export class CandidatesRepository extends IBaseRepository {
     return created.id;
   }
 
+  async findOneByEmail(email: string): Promise<CandidateModel | null> {
+    return await this.prisma.candidate.findFirst({
+      where: { email, deletedAt: null },
+    });
+  }
+
   async create(request: CreateCandidateRequest): Promise<CandidateModel> {
+    const existingByEmail = await this.findOneByEmail(request.email);
+    if (existingByEmail) {
+      throw new ConflictException('Candidate with this email already exists');
+    }
+
     const positionId = await this.getOrCreatePositionIdByName(request.position);
 
     return await this.prisma.candidate.create({
       data: {
         name: request.name,
+        email: request.email,
         positionId,
-        expectedSalary: request.expectedSalary,
-        cvUrl: request.cvUrl,
+        ...(request.phone ? { phone: request.phone } : {}),
+        ...(request.linkedInUrl ? { linkedInUrl: request.linkedInUrl } : {}),
+        ...(request.comment ? { comment: request.comment } : {}),
+        ...(request.expectedSalary
+          ? { expectedSalary: request.expectedSalary }
+          : {}),
+        ...(request.cvUrl ? { cvUrl: request.cvUrl } : {}),
       },
     });
   }
@@ -52,6 +83,13 @@ export class CandidatesRepository extends IBaseRepository {
   ): Promise<CandidateModel> {
     const existing = await this.findOneById(id);
     if (!existing) throw new NotFoundException('Candidate');
+
+    if (data.email && data.email !== existing.email) {
+      const byEmail = await this.findOneByEmail(data.email);
+      if (byEmail && byEmail.id !== id) {
+        throw new ConflictException('Candidate with this email already exists');
+      }
+    }
 
     const { position, ...rest } = data;
     const positionId = position

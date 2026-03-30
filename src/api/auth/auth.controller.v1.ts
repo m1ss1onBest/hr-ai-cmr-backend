@@ -13,17 +13,15 @@ import {
   RegisterUserRequest,
   RegisterUserResponse,
 } from './dto';
-import { IRegisterUseCase } from './use-cases/register/register.interface';
-import { ILoginUseCase } from './use-cases/login/login.interface';
-import { ApiResponse } from '@nestjs/swagger';
-import { Response, Request } from 'express';
+import { AuthConfig } from './modules/configs';
+import ms from 'ms';
+import { AuthService } from './auth.service';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_NAME,
 } from './modules/jwt/jwt.constants';
-import { AuthConfig } from './modules/configs';
-import ms from 'ms';
-import { AuthService } from './auth.service';
+import { ApiResponse } from '@nestjs/swagger';
+import { Response, Request } from 'express';
 
 function setAuthCookies(
   res: Response,
@@ -61,8 +59,6 @@ function clearAuthCookies(res: Response) {
 })
 export class AuthControllerV1 {
   constructor(
-    private readonly registerUseCase: IRegisterUseCase,
-    private readonly loginUseCase: ILoginUseCase,
     private readonly authService: AuthService,
     private readonly authConfig: AuthConfig,
   ) {}
@@ -86,9 +82,8 @@ export class AuthControllerV1 {
     @Body() dto: RegisterUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } = await this.authService.register(
-      dto,
-    );
+    const { accessToken, refreshToken, user } =
+      await this.authService.register(dto);
 
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);
     return { user };
@@ -108,7 +103,8 @@ export class AuthControllerV1 {
     @Body() dto: LoginUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } = await this.authService.login(dto);
+    const { accessToken, refreshToken, user } =
+      await this.authService.login(dto);
 
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);
     return { user };
@@ -120,7 +116,12 @@ export class AuthControllerV1 {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = (req.cookies ?? {})[REFRESH_TOKEN_COOKIE_NAME];
+    const rawRefreshToken: unknown = (req.cookies ?? {})[
+      REFRESH_TOKEN_COOKIE_NAME
+    ];
+    const refreshToken =
+      typeof rawRefreshToken === 'string' ? rawRefreshToken : '';
+
     const { accessToken } = await this.authService.refresh(refreshToken);
 
     // keep refresh token cookie as is
@@ -138,7 +139,12 @@ export class AuthControllerV1 {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = (req.cookies ?? {})[REFRESH_TOKEN_COOKIE_NAME];
+    const rawRefreshToken: unknown = (req.cookies ?? {})[
+      REFRESH_TOKEN_COOKIE_NAME
+    ];
+    const refreshToken =
+      typeof rawRefreshToken === 'string' ? rawRefreshToken : '';
+
     await this.authService.logout(refreshToken);
     clearAuthCookies(res);
   }
@@ -153,8 +159,6 @@ export class AuthControllerV1 {
 })
 export class AuthController {
   constructor(
-    private readonly registerUseCase: IRegisterUseCase,
-    private readonly loginUseCase: ILoginUseCase,
     private readonly authService: AuthService,
     private readonly authConfig: AuthConfig,
   ) {}
@@ -165,9 +169,8 @@ export class AuthController {
     @Body() dto: RegisterUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } = await this.authService.register(
-      dto,
-    );
+    const { accessToken, refreshToken, user } =
+      await this.authService.register(dto);
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);
     return { user };
   }
@@ -178,7 +181,8 @@ export class AuthController {
     @Body() dto: LoginUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } = await this.authService.login(dto);
+    const { accessToken, refreshToken, user } =
+      await this.authService.login(dto);
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);
     return { user };
   }
@@ -189,7 +193,12 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = (req.cookies ?? {})[REFRESH_TOKEN_COOKIE_NAME];
+    const rawRefreshToken: unknown = (req.cookies ?? {})[
+      REFRESH_TOKEN_COOKIE_NAME
+    ];
+    const refreshToken =
+      typeof rawRefreshToken === 'string' ? rawRefreshToken : '';
+
     const { accessToken } = await this.authService.refresh(refreshToken);
     res.cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, {
       httpOnly: true,
@@ -204,7 +213,12 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = (req.cookies ?? {})[REFRESH_TOKEN_COOKIE_NAME];
+    const rawRefreshToken: unknown = (req.cookies ?? {})[
+      REFRESH_TOKEN_COOKIE_NAME
+    ];
+    const refreshToken =
+      typeof rawRefreshToken === 'string' ? rawRefreshToken : '';
+
     await this.authService.logout(refreshToken);
     clearAuthCookies(res);
   }

@@ -18,4 +18,3 @@ export class JwtRefreshTokenStore {
     return this.revokedJtis.has(jti);
   }
 }
-
