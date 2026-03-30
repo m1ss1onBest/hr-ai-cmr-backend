@@ -23,8 +23,6 @@ import {
   SearchCandidatesQuery,
 } from './dto/search.candidates.dto';
 import { ISearchCandidatesUseCase } from './use-cases/search-candidates/search-candiadtes.interface';
-import { ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
 import {
   UpdateCandidateRequest,
   UpdateCandidateResponse,
@@ -32,6 +30,8 @@ import {
 import { IUpdateCandidateUseCase } from './use-cases/update-candidate/update-candidate.interface';
 import { IDeleteCandidateUseCase } from './use-cases/delete-candidate/delete-candidate.interface';
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
+import { ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
 
 @Controller({
   version: '1',

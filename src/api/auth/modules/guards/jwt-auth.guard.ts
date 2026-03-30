@@ -14,7 +14,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly jwtService: IJwtTokensService,
-  ) {}
+  ){}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
@@ -37,24 +37,35 @@ export class JwtAuthGuard implements CanActivate {
       }
     }
 
-    if (!authHeader)
+    if (!authHeader) {
       throw new UnauthorizedException('No Authorization token provided');
+    }
 
     const [bearer, token] = String(authHeader).split(' ') ?? [];
-    if (bearer !== 'Bearer' || !token)
+
+    if (bearer !== 'Bearer' || !token) {
       throw new UnauthorizedException('Invalid authorization token');
+    }
 
-    const payload = await this.jwtService.verifyAccessToken(token);
-    if (!payload)
+    try {
+      const payload = await this.jwtService.verifyAccessToken(token);
+
+      if (!payload) {
+        throw new UnauthorizedException('Invalid authorization token');
+      }
+
+      const user = await this.usersRepo.findOneById(payload.sub);
+
+      if (!user) {
+        throw new UnauthorizedException(
+          'User associated with this token does not exist',
+        );
+      }
+
+      request['_user'] = new User({ ...user });
+    } catch {
       throw new UnauthorizedException('Invalid or expired authorization token');
-
-    const user = await this.usersRepo.findOneById(payload.sub);
-    if (!user)
-      throw new UnauthorizedException(
-        'User associated with this token does not exist',
-      );
-
-    request['_user'] = new User({ ...user });
+    }
 
     return true;
   }

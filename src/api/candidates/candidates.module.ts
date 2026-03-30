@@ -7,9 +7,9 @@ import { DatabaseModule } from 'src/shared/infrastructure/database/database.modu
 import { GET_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/get-candidate/get-candidate.interface';
 import { CREATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/create/create-candidate.interface';
 import { SEARCH_CANDIDATES_USE_CASE_PROVIDER } from './use-cases/search-candidates/search-candiadtes.interface';
-import { ServicesModule } from 'src/shared/infrastructure/logger/logger.module';
 import { UPDATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/update-candidate/update-candidate.interface';
 import { DELETE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/delete-candidate/delete-candidate.interface';
+import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 import { AuthModule } from '../auth/auth.module';
 
 export const CANDIDATE_MODULE_PROVIDERS: Provider[] = [
@@ -21,7 +21,7 @@ export const CANDIDATE_MODULE_PROVIDERS: Provider[] = [
 ];
 
 @Module({
-  imports: [DatabaseModule, ServicesModule, AuthModule],
+  imports: [DatabaseModule, LoggerModule, AuthModule],
   controllers: [CandidatesControllerV1, CandidatesController],
   providers: CANDIDATE_MODULE_PROVIDERS,
 })

@@ -6,7 +6,7 @@ import { VacanciesModule } from './api/vacancies/vacancies.module';
 import { AuthModule } from './api/auth/auth.module';
 import { ConfigurationModule } from './shared/infrastructure/config/config.module';
 import { CandidatesModule } from './api/candidates/candidates.module';
-import { ServicesModule } from './shared/infrastructure/logger/logger.module';
+import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { ServicesModule } from './shared/infrastructure/logger/logger.module';
     VacanciesModule,
     AuthModule,
     CandidatesModule,
-    ServicesModule,
+    LoggerModule,
   ],
 })
 export class AppModule {}

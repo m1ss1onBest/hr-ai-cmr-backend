@@ -1,19 +1,44 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsStrongPassword,
+  MinLength,
+} from 'class-validator';
+import { UserBaseResponse } from 'src/api/users/dto/user.base-response';
 
-export class RegisterDto {
+export class RegisterUserRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
-  name!: string;
+  @ApiProperty({
+    description: 'User name',
+    example: 'John Doe',
+  })
+  name: string;
 
   @IsEmail()
   @IsNotEmpty()
-  email!: string;
+  @ApiProperty({
+    description: 'User email',
+    example: 'john@mail.com',
+  })
+  email: string;
 
   @IsString()
-  @MinLength(8)
-  password!: string;
+  @IsStrongPassword(
+    {},
+    {
+      message:
+        'The password must be at least 8 characters long, must contain at least 1 uppercase and lowercase leter, number and a special symbol',
+    },
+  )
+  @ApiProperty({
+    description: 'User password',
+    example: '!Password1',
+  })
+  password: string;
 }
-export class RegisterUserRequest {}
 
-export class RegisterUserResponse {}
+export class RegisterUserResponse extends UserBaseResponse {}

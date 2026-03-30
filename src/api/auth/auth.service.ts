@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 import { UserRole } from '../../../prisma/generated/enums';
 import { User } from '../../../prisma/generated/client';
 import { UsersRepository } from 'src/shared/infrastructure/database/repositories/users.repository';
-import { LoginDto, RegisterDto } from './dto';
+import { LoginUserRequest, RegisterUserRequest } from './dto';
 
 type AuthUserResponse = Omit<User, 'password'>;
 
@@ -19,7 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<{ token: string }> {
+  async register(dto: RegisterUserRequest): Promise<{ token: string }> {
     const existing = await this.usersRepo.findOneByEmail(dto.email);
     if (existing) {
       throw new ConflictException('Email already taken');
@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   async login(
-    dto: LoginDto,
+    dto: LoginUserRequest,
   ): Promise<{ token: string; user: AuthUserResponse }> {
     const user: User | null = await this.usersRepo.findOneByEmail(dto.email);
     if (!user) {

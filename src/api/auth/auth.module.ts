@@ -6,10 +6,13 @@ import { AuthControllerV1 } from './auth.controller.v1';
 import { AuthService } from './auth.service';
 import { REGISTER_USE_CASE_PROVIDER } from './use-cases/register/register.interface';
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { LOGIN_USE_CASE_PROVIDER } from './use-cases/login/login.interface';
+import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 
 export const AUTH_MODULE_PROVIDERS = [
   JWT_TOKENS_SERVICE_PROVIDER,
   REGISTER_USE_CASE_PROVIDER,
+  LOGIN_USE_CASE_PROVIDER,
 ];
 
 @Module({
@@ -24,6 +27,7 @@ export const AUTH_MODULE_PROVIDERS = [
       }),
     }),
     DatabaseModule,
+    LoggerModule,
   ],
   controllers: [AuthControllerV1],
   providers: [AuthService, ...AUTH_MODULE_PROVIDERS],
