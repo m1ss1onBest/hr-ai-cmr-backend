@@ -1,3 +1,12 @@
+process.env.ACCESS_TOKEN_SECRET =
+  process.env.ACCESS_TOKEN_SECRET ?? 'access_secret';
+process.env.ACCESS_TOKEN_EXPIRATION =
+  process.env.ACCESS_TOKEN_EXPIRATION ?? '15m';
+process.env.REFRESH_TOKEN_SECRET =
+  process.env.REFRESH_TOKEN_SECRET ?? 'refresh_secret';
+process.env.REFRESH_TOKEN_EXPIRATION =
+  process.env.REFRESH_TOKEN_EXPIRATION ?? '7d';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';

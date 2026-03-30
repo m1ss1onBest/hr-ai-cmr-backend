@@ -8,12 +8,9 @@ import { REGISTER_USE_CASE_PROVIDER } from './use-cases/register/register.interf
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
 import { LOGIN_USE_CASE_PROVIDER } from './use-cases/login/login.interface';
 import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
-
-export const AUTH_MODULE_PROVIDERS = [
-  JWT_TOKENS_SERVICE_PROVIDER,
-  REGISTER_USE_CASE_PROVIDER,
-  LOGIN_USE_CASE_PROVIDER,
-];
+import { JwtRefreshTokenStore } from './modules/jwt/jwt-refresh.store';
+import { JwtAuthGuard } from './modules/guards/jwt-auth.guard';
+import { JwtAuthMiddleware } from './modules/guards/jwt-auth.middleware';
 
 @Module({
   imports: [
@@ -30,7 +27,22 @@ export const AUTH_MODULE_PROVIDERS = [
     LoggerModule,
   ],
   controllers: [AuthControllerV1, AuthController],
-  providers: [AuthService, ...AUTH_MODULE_PROVIDERS],
-  exports: [...AUTH_MODULE_PROVIDERS],
+  providers: [
+    AuthService,
+    JWT_TOKENS_SERVICE_PROVIDER,
+    JwtRefreshTokenStore,
+    JwtAuthGuard,
+    JwtAuthMiddleware,
+    REGISTER_USE_CASE_PROVIDER,
+    LOGIN_USE_CASE_PROVIDER,
+  ],
+  exports: [
+    JWT_TOKENS_SERVICE_PROVIDER,
+    JwtRefreshTokenStore,
+    JwtAuthGuard,
+    JwtAuthMiddleware,
+    REGISTER_USE_CASE_PROVIDER,
+    LOGIN_USE_CASE_PROVIDER,
+  ],
 })
 export class AuthModule {}

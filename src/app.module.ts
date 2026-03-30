@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { DatabaseModule } from './shared/infrastructure/database/database.module';
 import { UsersModule } from './api/users/users.module';
 import { ConfigModule } from '@nestjs/config';
@@ -7,6 +7,7 @@ import { AuthModule } from './api/auth/auth.module';
 import { ConfigurationModule } from './shared/infrastructure/config/config.module';
 import { CandidatesModule } from './api/candidates/candidates.module';
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
+import { JwtAuthMiddleware } from './api/auth/modules/guards/jwt-auth.middleware';
 
 @Module({
   imports: [
@@ -23,4 +24,8 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
     LoggerModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(JwtAuthMiddleware as any).forRoutes('*');
+  }
+}
