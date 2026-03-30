@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsUUID } from 'class-validator';
-import { CandidateStatus } from 'prisma/generated/enums';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 import { ICandidateData } from 'src/shared/domain/candidates/candidate.entity';
 
 export class CandidateBaseResponse implements ICandidateData {
@@ -31,17 +30,19 @@ export class CandidateBaseResponse implements ICandidateData {
   expectedSalary: string;
 
   @ApiProperty({
-    enum: CandidateStatus,
-    description: 'Current candidate status',
-    example: 'NEW',
+    description: 'Candidate position id',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  currentStatus: string;
+  positionId: string;
 
+  @IsOptional()
+  @IsString()
   @ApiProperty({
-    description: 'Candidate position',
+    required: false,
+    description: 'Candidate position name (optional)',
     example: 'Senior DevOps Engineer',
   })
-  position: string;
+  position?: string;
 
   @ApiProperty({
     description: 'Candidate creation date',

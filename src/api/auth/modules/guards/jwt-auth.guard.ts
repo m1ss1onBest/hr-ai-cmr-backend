@@ -18,30 +18,44 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
-    const authHeader = request.headers.get('authorization');
+
+    const headersObj = (request as unknown as { headers?: unknown }).headers;
+
+    let authHeader: string | string[] | null | undefined;
+
+    if (headersObj && typeof headersObj === 'object') {
+      if (typeof (headersObj as { get?: unknown }).get === 'function') {
+        authHeader = (
+          headersObj as { get: (name: string) => string | null }
+        ).get('authorization');
+      } else {
+        const record = headersObj as Record<
+          string,
+          string | string[] | undefined
+        >;
+        authHeader = record['authorization'] ?? record['Authorization'];
+      }
+    }
 
     if (!authHeader)
       throw new UnauthorizedException('No Authorization token provided');
 
-    const [bearer, token] = authHeader?.split(' ') ?? [];
+    const [bearer, token] = String(authHeader).split(' ') ?? [];
     if (bearer !== 'Bearer' || !token)
       throw new UnauthorizedException('Invalid authorization token');
 
-    try {
-      const payload = await this.jwtService.verifyAccessToken(token);
-      if (!payload)
-        throw new UnauthorizedException(`Invalid authorization token`);
-
-      const user = await this.usersRepo.findOneById(payload.sub);
-      if (!user)
-        throw new UnauthorizedException(
-          'User associated with this token does not exist',
-        );
-
-      request['_user'] = new User({ ...user });
-    } catch {
+    const payload = await this.jwtService.verifyAccessToken(token);
+    if (!payload)
       throw new UnauthorizedException('Invalid or expired authorization token');
-    }
+
+    const user = await this.usersRepo.findOneById(payload.sub);
+    if (!user)
+      throw new UnauthorizedException(
+        'User associated with this token does not exist',
+      );
+
+    request['_user'] = new User({ ...user });
+
     return true;
   }
 }

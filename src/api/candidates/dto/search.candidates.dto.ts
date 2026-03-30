@@ -5,16 +5,12 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
-import { CandidateStatus } from 'prisma/generated/enums';
 import { PaginatedResponse } from 'src/shared/contracts/dto/pagination.dto';
 import { CandidateBaseResponse } from './candidate.base-response';
 
 export class SearchCandidatesQuery {
-  @IsOptional()
-  @IsEnum(CandidateStatus, { each: true })
-  status?: CandidateStatus[];
-
   @IsOptional()
   @IsString({ each: true })
   position?: string[];
@@ -43,19 +39,32 @@ export class SearchCandidatesQuery {
 
   @IsOptional()
   @IsString()
-  sortBy?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'name';
 
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  order?: 'asc' | 'desc';
+
+  /** @deprecated use `order` */
   @IsOptional()
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
 
   @Type(() => Number)
   @IsNumber()
+  @Min(1)
   page: number = 1;
 
   @Type(() => Number)
   @IsNumber()
-  pageSize: number = 10;
+  @Min(1)
+  limit: number = 20;
+
+  /** @deprecated use `limit` */
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  pageSize?: number;
 }
 
 export class SearchCandidatesPaginatedResponse extends PaginatedResponse<CandidateBaseResponse> {}

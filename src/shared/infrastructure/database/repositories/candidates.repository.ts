@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IBaseUserRepository as IBaseRepository } from '../../../contracts/use-cases/base.repository';
 import { Candidate as CandidateModel, Prisma } from 'prisma/generated/client';
 import { CreateCandidateRequest } from 'src/api/candidates/dto/create.candidate.dto';
 import { SearchCandidatesQuery } from 'src/api/candidates/dto/search.candidates.dto';
 import { PaginatedResponse } from 'src/shared/contracts/dto/pagination.dto';
+import * as crypto from 'crypto';
+
+export type UpdateCandidateRequest = Partial<
+  Pick<CreateCandidateRequest, 'name' | 'expectedSalary' | 'cvUrl' | 'position'>
+>;
 
 @Injectable()
 export class CandidatesRepository extends IBaseRepository {
@@ -13,45 +18,120 @@ export class CandidatesRepository extends IBaseRepository {
     });
   }
 
+  private async getOrCreatePositionIdByName(name: string): Promise<string> {
+    const existing = await this.prisma.position.findUnique({
+      where: { name },
+    });
+    if (existing) return existing.id;
+
+    const created = await this.prisma.position.create({
+      data: {
+        id: crypto.randomUUID(),
+        name,
+      },
+    });
+    return created.id;
+  }
+
   async create(request: CreateCandidateRequest): Promise<CandidateModel> {
+    const positionId = await this.getOrCreatePositionIdByName(request.position);
+
     return await this.prisma.candidate.create({
       data: {
         name: request.name,
-        position: request.position,
+        positionId,
         expectedSalary: request.expectedSalary,
         cvUrl: request.cvUrl,
       },
     });
   }
 
+  async update(
+    id: string,
+    data: UpdateCandidateRequest,
+  ): Promise<CandidateModel> {
+    const existing = await this.findOneById(id);
+    if (!existing) throw new NotFoundException('Candidate');
+
+    const { position, ...rest } = data;
+    const positionId = position
+      ? await this.getOrCreatePositionIdByName(position)
+      : undefined;
+
+    return await this.prisma.candidate.update({
+      where: { id },
+      data: {
+        ...rest,
+        ...(positionId ? { positionId } : {}),
+      },
+    });
+  }
+
+  async softDelete(id: string): Promise<CandidateModel> {
+    const existing = await this.findOneById(id);
+    if (!existing) throw new NotFoundException('Candidate');
+
+    return await this.prisma.candidate.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
   async searchMany(
     searchQuery: SearchCandidatesQuery,
   ): Promise<PaginatedResponse<CandidateModel>> {
-    const { page, pageSize } = searchQuery;
+    const page = searchQuery.page ?? 1;
+    const limit = searchQuery.limit ?? searchQuery.pageSize ?? 20;
 
-    const queryBuilder: Prisma.CandidateFindManyArgs = {
-      where: {},
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: { createdAt: 'desc' },
+    const sortBy = searchQuery.sortBy ?? 'createdAt';
+    const order = searchQuery.order ?? searchQuery.sortOrder ?? 'desc';
+
+    const where: Prisma.CandidateWhereInput = {
+      deletedAt: null,
     };
 
-    if (searchQuery.status?.length) {
-      queryBuilder.where!.currentStatus = { in: searchQuery.status };
+    if (searchQuery.position?.length) {
+      // API provides position as names; filter through relation
+      where.Position = {
+        is: {
+          name: { in: searchQuery.position },
+        },
+      };
     }
 
-    const searchData = await this.prisma.candidate.findMany(queryBuilder);
-    const total = await this.prisma.candidate.count({
-      where: queryBuilder.where,
-    });
-    const totalPages = Math.ceil(total / pageSize);
+    if (searchQuery.search) {
+      where.OR = [
+        { name: { contains: searchQuery.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (searchQuery.createdAfter || searchQuery.createdBefore) {
+      where.createdAt = {
+        gte: searchQuery.createdAfter,
+        lte: searchQuery.createdBefore,
+      };
+    }
+
+    const queryBuilder: Prisma.CandidateFindManyArgs = {
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { [sortBy]: order },
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.candidate.findMany(queryBuilder),
+      this.prisma.candidate.count({ where: queryBuilder.where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
 
     return {
-      data: searchData,
+      data,
       meta: {
         total,
-        page: searchQuery.page,
-        pageSize: searchQuery.pageSize,
+        page,
+        pageSize: limit,
         totalPages,
       },
     };
