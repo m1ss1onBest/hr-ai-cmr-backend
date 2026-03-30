@@ -4,7 +4,8 @@ import { DatabaseModule } from 'src/shared/infrastructure/database/database.modu
 import { GET_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/get-candidate/get-candidate.interface';
 import { CREATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/create/create-candidate.interface';
 import { SEARCH_CANDIDATES_USE_CASE_PROVIDER } from './use-cases/search-candidates/search-candiadtes.interface';
-import { ServicesModule } from 'src/shared/infrastructure/logger/logger.module';
+import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
+import { AuthModule } from '../auth/auth.module';
 
 export const CANDIDATE_MODULE_PROVIDERS = [
   GET_CANDIDATE_USE_CASE_PROVIDER,
@@ -13,7 +14,7 @@ export const CANDIDATE_MODULE_PROVIDERS = [
 ];
 
 @Module({
-  imports: [DatabaseModule, ServicesModule],
+  imports: [DatabaseModule, LoggerModule, AuthModule],
   controllers: [CandidatesControllerV1],
   providers: [...CANDIDATE_MODULE_PROVIDERS],
 })

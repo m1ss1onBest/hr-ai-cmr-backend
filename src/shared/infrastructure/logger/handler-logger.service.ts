@@ -6,12 +6,13 @@ import {
   NotFoundException,
   UnauthorizedException,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 
 type HttpExceptionConstructor = new (message: string) => any;
 
 @Injectable()
-export class HandlerLogger extends Logger {
+export class EventHandlerLogger extends Logger {
   constructor(context: string) {
     super(context);
   }
@@ -34,6 +35,10 @@ export class HandlerLogger extends Logger {
 
   badRequest(msg: string, err?: any): never {
     return this.logAndThrow(BadRequestException, msg, err);
+  }
+
+  conflict(msg: string, err?: any): never {
+    return this.logAndThrow(ConflictException, msg, err);
   }
 
   notFound(msg: string, err?: any): never {

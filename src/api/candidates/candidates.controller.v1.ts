@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -6,6 +7,8 @@ import {
   Param,
   Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CandidateBaseResponse } from './dto/candidate.base-response';
 import { IGetCandidateUseCase } from './use-cases/get-candidate/get-candidate.interface';
@@ -20,6 +23,8 @@ import {
 } from './dto/search.candidates.dto';
 import { ISearchCandidatesUseCase } from './use-cases/search-candidates/search-candiadtes.interface';
 import { ApiResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
+import { AuthRequest } from '../auth/modules/guards/auth-request.interface';
 
 @Controller({
   version: '1',
@@ -43,7 +48,12 @@ export class CandidatesControllerV1 {
     status: 404,
     description: 'Candidate not found',
   })
-  async getOneById(@Param('id') id: string): Promise<CandidateBaseResponse> {
+  @UseGuards(JwtAuthGuard)
+  async getOneById(
+    @Param('id') id: string,
+    @Req() req: AuthRequest,
+  ): Promise<CandidateBaseResponse> {
+    throw new BadRequestException(req);
     return await this.getCandidate.run(id);
   }
 

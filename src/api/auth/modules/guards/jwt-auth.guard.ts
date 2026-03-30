@@ -18,16 +18,19 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
-    const authHeader = request.headers.get('authorization');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const authHeader = request.headers['authorization'];
 
     if (!authHeader)
       throw new UnauthorizedException('No Authorization token provided');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const [bearer, token] = authHeader?.split(' ') ?? [];
     if (bearer !== 'Bearer' || !token)
       throw new UnauthorizedException('Invalid authorization token');
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const payload = await this.jwtService.verifyAccessToken(token);
       if (!payload)
         throw new UnauthorizedException(`Invalid authorization token`);
