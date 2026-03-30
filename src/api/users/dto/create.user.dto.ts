@@ -5,7 +5,7 @@ export class CreateUserRequest {
   password: string;
   name: string;
   email: string;
-  role: UserRole;
+  role?: UserRole;
 }
 
 export class CreateUserResponse extends UserBaseResponse {}

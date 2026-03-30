@@ -37,7 +37,7 @@ export function Config(): ClassDecorator {
 
 ${formatted}
 
-💡 Check your environment variables (.env)
+💡 Check your environment variables (or .env file)
 `.trim();
 
       const error = new Error(message);

@@ -25,7 +25,7 @@ export class User implements IUserData {
   safe(): SafeUserData {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...user } = this;
-    return this;
+    return user;
   }
 }
 
