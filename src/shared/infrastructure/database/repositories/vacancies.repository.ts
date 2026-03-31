@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IBaseUserRepository } from '../../../contracts/use-cases/base.repository';
 import { Vacancy, Prisma } from 'prisma/generated/client';
 
 @Injectable()
-export class VacansiesRepository extends IBaseUserRepository {
+export class VacanciesRepository extends IBaseUserRepository {
   async findOneById(id: string): Promise<Vacancy | null> {
-    return await this.prisma.vacancy.findUnique({ where: { id } });
+    return await this.prisma.vacancy.findUnique({
+      where: { id, deletedAt: null },
+    });
   }
 
-  async create(data: Prisma.VacancyUncheckedCreateInput): Promise<Vacancy> {
+  async create(
+    data: Omit<Prisma.VacancyUncheckedCreateInput, 'id'>,
+  ): Promise<Vacancy> {
     return await this.prisma.vacancy.create({ data });
   }
 
   async update(id: string, data: Prisma.VacancyUpdateInput): Promise<Vacancy> {
+    const existing = await this.findOneById(id);
+    if (!existing) throw new NotFoundException('Vacancy not found');
+
     return await this.prisma.vacancy.update({ where: { id }, data });
   }
 
-  async remove(id: string): Promise<Vacancy> {
-    return await this.prisma.vacancy.delete({ where: { id } });
+  async softDelete(id: string): Promise<Vacancy> {
+    const existing = await this.findOneById(id);
+    if (!existing) throw new NotFoundException('Vacancy not found');
+
+    return await this.prisma.vacancy.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async findAll(): Promise<Vacancy[]> {
-    return await this.prisma.vacancy.findMany();
+    return await this.prisma.vacancy.findMany({
+      where: { deletedAt: null },
+    });
   }
 }
