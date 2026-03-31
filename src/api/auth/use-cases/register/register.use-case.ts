@@ -8,12 +8,14 @@ import { UsersRepository } from 'src/shared/infrastructure/database/repositories
 import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
 import bcrypt from 'bcryptjs';
 import { User } from 'src/shared/domain/users/user.entity';
+import { MailService } from 'src/shared/infrastructure/mail/mail.service';
 
 @Injectable()
 export class RegisterUseCase implements IRegisterUseCase {
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly event: EventHandlerLogger,
+    private readonly mailService: MailService,
   ) {
     this.event.setContext(RegisterUseCase.name);
   }
@@ -31,6 +33,8 @@ export class RegisterUseCase implements IRegisterUseCase {
       name: request.name,
       password: passwordHash,
     });
+
+    await this.mailService.sendVerifyEmail(user.email);
 
     this.event.log('User registered successfully');
     return new User(user).safe();
