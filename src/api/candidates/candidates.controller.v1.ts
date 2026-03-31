@@ -40,7 +40,10 @@ import { UserRole } from 'prisma/generated/enums';
   version: '1',
   path: 'candidates',
 })
-@UseGuards(JwtAuthGuard as unknown as new (...args: any[]) => any, RolesGuard as unknown as new (...args: any[]) => any)
+@UseGuards(
+  JwtAuthGuard as unknown as new (...args: any[]) => any,
+  RolesGuard as unknown as new (...args: any[]) => any,
+)
 @ApiBearerAuth()
 export class CandidatesControllerV1 {
   constructor(
@@ -117,7 +120,10 @@ export class CandidatesControllerV1 {
 @Controller({
   path: 'candidates',
 })
-@UseGuards(JwtAuthGuard as unknown as new (...args: any[]) => any, RolesGuard as unknown as new (...args: any[]) => any)
+@UseGuards(
+  JwtAuthGuard as unknown as new (...args: any[]) => any,
+  RolesGuard as unknown as new (...args: any[]) => any,
+)
 @ApiBearerAuth()
 export class CandidatesController {
   constructor(

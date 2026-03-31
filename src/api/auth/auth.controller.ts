@@ -7,12 +7,7 @@ import {
   Res,
   Req,
 } from '@nestjs/common';
-import {
-  LoginUserRequest,
-  LoginUserResponse,
-  RegisterUserRequest,
-  RegisterUserResponse,
-} from './dto';
+import { LoginUserRequest, RegisterUserRequest } from './dto';
 import { AuthConfig } from './modules/configs';
 import ms from 'ms';
 import { AuthService } from './auth.service';
@@ -20,7 +15,6 @@ import {
   ACCESS_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_NAME,
 } from './modules/jwt/jwt.constants';
-import { ApiResponse } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 
 function setAuthCookies(
@@ -53,11 +47,14 @@ function clearAuthCookies(res: Response) {
   res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { path: '/api/auth' });
 }
 
+/**
+ * Backward-compatible alias routes without URI version prefix.
+ * With global prefix `api`, this exposes: /api/auth/*
+ */
 @Controller({
-  version: '1',
   path: 'auth',
 })
-export class AuthControllerV1 {
+export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly authConfig: AuthConfig,
@@ -65,47 +62,24 @@ export class AuthControllerV1 {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'User registered successfully',
-    type: RegisterUserResponse,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Failed to register user',
-  })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Email already in use',
-  })
   async register(
     @Body() dto: RegisterUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken, user } =
       await this.authService.register(dto);
-
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);
     return { user };
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-    status: HttpStatus.OK,
-    type: LoginUserResponse,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Failed to log in user',
-  })
   async login(
     @Body() dto: LoginUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken, user } =
       await this.authService.login(dto);
-
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);
     return { user };
   }
@@ -123,8 +97,6 @@ export class AuthControllerV1 {
       typeof rawRefreshToken === 'string' ? rawRefreshToken : '';
 
     const { accessToken } = await this.authService.refresh(refreshToken);
-
-    // keep refresh token cookie as is
     res.cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, {
       httpOnly: true,
       sameSite: 'lax',
@@ -132,7 +104,6 @@ export class AuthControllerV1 {
       maxAge: ms(this.authConfig.ACCESS_TOKEN_EXPIRATION),
       path: '/api',
     });
-
     return { ok: true };
   }
 

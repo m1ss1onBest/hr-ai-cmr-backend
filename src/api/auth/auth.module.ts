@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthConfig } from './modules/configs';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_TOKENS_SERVICE_PROVIDER } from './modules/jwt/jwt.interface';
-import { AuthControllerV1, AuthController } from './auth.controller.v1';
+import { AuthControllerV1 } from './auth.controller.v1';
 import { AuthService } from './auth.service';
 import { REGISTER_USE_CASE_PROVIDER } from './use-cases/register/register.interface';
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
@@ -12,6 +12,8 @@ import { JwtRefreshTokenStore } from './modules/jwt/jwt-refresh.store';
 import { JwtAuthGuard } from './modules/guards/jwt-auth.guard';
 import { JwtAuthMiddleware } from './modules/guards/jwt-auth.middleware';
 import { RolesGuard } from './modules/guards/roles.guard';
+import { MailModule } from 'src/shared/infrastructure/mail/mail.module';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { RolesGuard } from './modules/guards/roles.guard';
     }),
     DatabaseModule,
     LoggerModule,
+    MailModule,
   ],
   controllers: [AuthControllerV1, AuthController],
   providers: [

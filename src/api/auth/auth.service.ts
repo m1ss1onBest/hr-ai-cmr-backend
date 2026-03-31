@@ -10,6 +10,7 @@ import { UsersRepository } from 'src/shared/infrastructure/database/repositories
 import { LoginUserRequest, RegisterUserRequest } from './dto';
 import { IJwtTokensService } from './modules/jwt/jwt.interface';
 import { JwtRefreshTokenStore } from './modules/jwt/jwt-refresh.store';
+import { MailService } from 'src/shared/infrastructure/mail/mail.service';
 
 type AuthUserResponse = Omit<User, 'password'>;
 
@@ -19,6 +20,7 @@ export class AuthService {
     private readonly usersRepo: UsersRepository,
     private readonly jwtService: IJwtTokensService,
     private readonly refreshStore: JwtRefreshTokenStore,
+    private readonly mailService: MailService,
   ) {}
 
   async register(dto: RegisterUserRequest): Promise<{
@@ -50,6 +52,8 @@ export class AuthService {
     const accessToken = await this.jwtService.generateAccessToken(payload);
     const { token: refreshToken } =
       await this.jwtService.generateRefreshToken(payload);
+
+    await this.mailService.sendVerifyEmail(user.email);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user;
