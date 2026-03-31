@@ -70,8 +70,10 @@ model Vacancy {
   salary       String?
   /// Array of candidate requirements
   requirements Json
+  techStack    String[] 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @default(now()) @updatedAt
+  deletedAt    DateTime?
   applications Application[]
   createdBy    User          @relation(fields: [createdById], references: [id])
 }

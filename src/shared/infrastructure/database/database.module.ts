@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { UsersRepository } from './repositories/users.repository';
-import { VacansiesRepository } from './repositories/vacancies.repository';
+import { VacanciesRepository } from './repositories/vacancies.repository';
 import { CandidatesRepository } from './repositories/candidates.repository';
 
 export const REPOSITORIES = [
   UsersRepository,
-  VacansiesRepository,
+  VacanciesRepository,
   CandidatesRepository,
 ];
 
