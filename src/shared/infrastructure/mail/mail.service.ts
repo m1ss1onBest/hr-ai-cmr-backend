@@ -11,6 +11,9 @@ export class MailService implements IMailService {
   ) {}
 
   async sendVerifyEmail(email: string): Promise<void> {
+    // If SMTP isn't configured, don't block flows like registration in local/dev.
+    if (!this.mailConfig.isEnabled) return;
+
     const link = this.mailConfig.EMAIL_VERIFICATION_URL;
 
     await this.mailer.sendMail({

@@ -9,6 +9,7 @@ import { CreateCandidateRequest } from 'src/api/candidates/dto/create.candidate.
 import { SearchCandidatesQuery } from 'src/api/candidates/dto/search.candidates.dto';
 import { PaginatedResponse } from 'src/shared/contracts/dto/pagination.dto';
 import * as crypto from 'crypto';
+import { CandidateStatus } from 'prisma/generated/enums';
 
 export type UpdateCandidateRequest = Partial<
   Pick<
@@ -173,5 +174,39 @@ export class CandidatesRepository extends IBaseRepository {
         totalPages,
       },
     };
+  }
+
+  async updateStatusWithHistory(params: {
+    candidateId: string;
+    status: CandidateStatus;
+    changedById: string;
+    applicationId?: string;
+  }): Promise<CandidateModel> {
+    const existing = await this.findOneById(params.candidateId);
+    if (!existing) throw new NotFoundException('Candidate');
+
+    const now = new Date();
+
+    const [candidate] = await this.prisma.$transaction([
+      // CandidateStatus is stored in StatusHistory; this update is used to ensure
+      // candidate row changes in the same transaction (updatedAt) and to return
+      // an updated candidate snapshot.
+      this.prisma.candidate.update({
+        where: { id: params.candidateId },
+        data: { updatedAt: now },
+      }),
+      this.prisma.statusHistory.create({
+        data: {
+          id: crypto.randomUUID(),
+          candidateId: params.candidateId,
+          status: params.status,
+          changedById: params.changedById,
+          applicationId: params.applicationId,
+          createdAt: now,
+        },
+      }),
+    ]);
+
+    return candidate;
   }
 }

@@ -14,6 +14,7 @@ export interface ICandidateData {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
+  currentStatus?: string;
 }
 
 export class Candidate implements ICandidateData {
@@ -30,6 +31,7 @@ export class Candidate implements ICandidateData {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
+  currentStatus?: string;
 
   constructor(props: CandidateModel | ICandidateData) {
     Object.assign(this, props);
