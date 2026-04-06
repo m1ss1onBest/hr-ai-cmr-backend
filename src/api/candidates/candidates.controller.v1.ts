@@ -180,6 +180,8 @@ export class CandidatesControllerV1 {
     @Body() request: AnalyzeResumeRequest,
   ): Promise<ResumeAnalysisResponse> {
     return await this.analyzeResume.run({ candidateId: id, ...request });
+  }
+
   @Patch(':id/status')
   @Roles(UserRole.HR)
   @HttpCode(200)
@@ -360,6 +362,8 @@ export class CandidatesController {
     @Body() request: AnalyzeResumeRequest,
   ): Promise<ResumeAnalysisResponse> {
     return await this.analyzeResume.run({ candidateId: id, ...request });
+  }
+
   @Patch(':id/status')
   @Roles(UserRole.HR)
   @HttpCode(200)

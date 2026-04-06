@@ -109,8 +109,8 @@ model ResumeAnalysis {
   summary           String
   analyzedAt        DateTime  @default(now())
   candidate         Candidate @relation(fields: [candidateId], references: [id])
-  
-  
+}
+
 model Comment {
   id          String    @id @default(uuid())
   candidateId String
