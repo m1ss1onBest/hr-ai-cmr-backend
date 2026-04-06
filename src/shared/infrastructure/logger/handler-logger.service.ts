@@ -1,9 +1,13 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
+  RequestTimeoutException,
+  ServiceUnavailableException,
   UnauthorizedException,
   InternalServerErrorException,
   ConflictException,
@@ -55,5 +59,21 @@ export class EventHandlerLogger extends Logger {
 
   internal(msg: string, err?: any): never {
     return this.logAndThrow(InternalServerErrorException, msg, err);
+  }
+
+  tooManyRequests(msg: string, err?: any): never {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const errorMessage = `${msg}${err ? ` - ${err.message || err}` : ''}`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.error(errorMessage, err?.stack ?? err);
+    throw new HttpException(msg, HttpStatus.TOO_MANY_REQUESTS);
+  }
+
+  serviceUnavailable(msg: string, err?: any): never {
+    return this.logAndThrow(ServiceUnavailableException, msg, err);
+  }
+
+  requestTimeout(msg: string, err?: any): never {
+    return this.logAndThrow(RequestTimeoutException, msg, err);
   }
 }

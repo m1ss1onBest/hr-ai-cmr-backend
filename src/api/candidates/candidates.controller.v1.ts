@@ -29,6 +29,11 @@ import {
 } from './dto/update.candidate.dto';
 import { IUpdateCandidateUseCase } from './use-cases/update-candidate/update-candidate.interface';
 import { IDeleteCandidateUseCase } from './use-cases/delete-candidate/delete-candidate.interface';
+import { IAnalyzeResumeUseCase } from './use-cases/analyze-resume/analyze-resume.interface';
+import {
+  AnalyzeResumeRequest,
+  ResumeAnalysisResponse,
+} from './dto/analyze-resume.dto';
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
 import { ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
@@ -57,6 +62,7 @@ export class CandidatesControllerV1 {
     >,
     @Inject(IDeleteCandidateUseCase)
     private readonly deleteCandidate: IBaseUseCase<{ id: string }, unknown>,
+    private readonly analyzeResume: IAnalyzeResumeUseCase,
   ) {}
 
   @Get(':id')
@@ -111,6 +117,24 @@ export class CandidatesControllerV1 {
   async remove(@Param('id') id: string): Promise<void> {
     await this.deleteCandidate.run({ id });
   }
+
+  @Post(':id/analyze-resume')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Resume analyzed successfully',
+    type: ResumeAnalysisResponse,
+  })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  @ApiResponse({ status: 408, description: 'AI request timed out' })
+  @ApiResponse({ status: 429, description: 'AI rate limit exceeded' })
+  @ApiResponse({ status: 503, description: 'AI service unavailable' })
+  async analyzeResumeForCandidate(
+    @Param('id') id: string,
+    @Body() request: AnalyzeResumeRequest,
+  ): Promise<ResumeAnalysisResponse> {
+    return await this.analyzeResume.run({ candidateId: id, ...request });
+  }
 }
 
 /**
@@ -137,6 +161,7 @@ export class CandidatesController {
     >,
     @Inject(IDeleteCandidateUseCase)
     private readonly deleteCandidate: IBaseUseCase<{ id: string }, unknown>,
+    private readonly analyzeResume: IAnalyzeResumeUseCase,
   ) {}
 
   @Get(':id')
@@ -177,5 +202,14 @@ export class CandidatesController {
   @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
     await this.deleteCandidate.run({ id });
+  }
+
+  @Post(':id/analyze-resume')
+  @HttpCode(200)
+  async analyzeResumeForCandidate(
+    @Param('id') id: string,
+    @Body() request: AnalyzeResumeRequest,
+  ): Promise<ResumeAnalysisResponse> {
+    return await this.analyzeResume.run({ candidateId: id, ...request });
   }
 }

@@ -37,6 +37,7 @@ model Candidate {
   Position             Position              @relation(fields: [positionId], references: [id])
   candidateCredentials CandidateCredential[]
   statusHistories      StatusHistory[]
+  resumeAnalyses       ResumeAnalysis[]
 }
 
 model StatusHistory {
@@ -92,6 +93,20 @@ model Position {
   id        String      @id
   name      String      @unique @db.VarChar(255)
   Candidate Candidate[]
+}
+
+model ResumeAnalysis {
+  id                String    @id @default(uuid())
+  candidateId       String
+  skills            Json      // string[]
+  level             String?   @db.VarChar(50) // Junior | Middle | Senior | null
+  yearsOfExperience Int?
+  technologies      Json      // string[]
+  softSkills        Json?     // string[] | null
+  score             Int       // 1-10
+  summary           String
+  analyzedAt        DateTime  @default(now())
+  candidate         Candidate @relation(fields: [candidateId], references: [id])
 }
 
 enum UserRole {
