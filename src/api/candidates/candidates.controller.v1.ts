@@ -40,6 +40,15 @@ import { UserRole } from 'prisma/generated/enums';
 import { Request } from 'express';
 import { UpdateCandidateStatusRequest } from './dto/update.candidate-status.dto';
 import { IUpdateCandidateStatusUseCase } from './use-cases/update-candidate-status/update-candidate-status.interface';
+import {
+  CandidateCommentResponse,
+  CreateCandidateCommentRequest,
+  UpdateCandidateCommentRequest,
+} from './dto/comments.dto';
+import { IAddCommentUseCase } from './use-cases/comments/add-comment/add-comment.interface';
+import { IGetCandidateCommentsUseCase } from './use-cases/comments/get-comments/get-comments.interface';
+import { IUpdateCommentUseCase } from './use-cases/comments/update-comment/update-comment.interface';
+import { IDeleteCommentUseCase } from './use-cases/comments/delete-comment/delete-comment.interface';
 
 @Controller({
   version: '1',
@@ -66,6 +75,33 @@ export class CandidatesControllerV1 {
     private readonly updateCandidateStatus: IBaseUseCase<
       { id: string; status: string; changedById: string },
       CandidateBaseResponse
+    >,
+    @Inject(IAddCommentUseCase)
+    private readonly addComment: IBaseUseCase<
+      { candidateId: string; authorId: string; text: string },
+      CandidateCommentResponse
+    >,
+    @Inject(
+      IGetCandidateCommentsUseCase as unknown as new (...args: any[]) => any,
+    )
+    private readonly getComments: IBaseUseCase<
+      { candidateId: string },
+      CandidateCommentResponse[]
+    >,
+    @Inject(IUpdateCommentUseCase as unknown as new (...args: any[]) => any)
+    private readonly updateComment: IBaseUseCase<
+      {
+        candidateId: string;
+        commentId: string;
+        authorId: string;
+        text: string;
+      },
+      CandidateCommentResponse
+    >,
+    @Inject(IDeleteCommentUseCase as unknown as new (...args: any[]) => any)
+    private readonly deleteComment: IBaseUseCase<
+      { candidateId: string; commentId: string; authorId: string },
+      void
     >,
   ) {}
 
@@ -140,6 +176,60 @@ export class CandidatesControllerV1 {
       changedById: user.id,
     });
   }
+
+  @Post(':id/comments')
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  async addCandidateComment(
+    @Param('id') candidateId: string,
+    @Body() dto: CreateCandidateCommentRequest,
+    @Req() req: Request,
+  ): Promise<CandidateCommentResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.addComment.run({
+      candidateId,
+      authorId: user.id,
+      text: dto.text,
+    });
+  }
+
+  @Get(':id/comments')
+  @HttpCode(200)
+  async getCandidateComments(
+    @Param('id') candidateId: string,
+  ): Promise<CandidateCommentResponse[]> {
+    return await this.getComments.run({ candidateId });
+  }
+
+  @Put(':id/comments/:commentId')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  async updateCandidateComment(
+    @Param('id') candidateId: string,
+    @Param('commentId') commentId: string,
+    @Body() dto: UpdateCandidateCommentRequest,
+    @Req() req: Request,
+  ): Promise<CandidateCommentResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.updateComment.run({
+      candidateId,
+      commentId,
+      authorId: user.id,
+      text: dto.text,
+    });
+  }
+
+  @Delete(':id/comments/:commentId')
+  @Roles(UserRole.HR)
+  @HttpCode(204)
+  async deleteCandidateComment(
+    @Param('id') candidateId: string,
+    @Param('commentId') commentId: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req['_user'] as { id: string };
+    await this.deleteComment.run({ candidateId, commentId, authorId: user.id });
+  }
 }
 
 /**
@@ -170,6 +260,33 @@ export class CandidatesController {
     private readonly updateCandidateStatus: IBaseUseCase<
       { id: string; status: string; changedById: string },
       CandidateBaseResponse
+    >,
+    @Inject(IAddCommentUseCase)
+    private readonly addComment: IBaseUseCase<
+      { candidateId: string; authorId: string; text: string },
+      CandidateCommentResponse
+    >,
+    @Inject(
+      IGetCandidateCommentsUseCase as unknown as new (...args: any[]) => any,
+    )
+    private readonly getComments: IBaseUseCase<
+      { candidateId: string },
+      CandidateCommentResponse[]
+    >,
+    @Inject(IUpdateCommentUseCase as unknown as new (...args: any[]) => any)
+    private readonly updateComment: IBaseUseCase<
+      {
+        candidateId: string;
+        commentId: string;
+        authorId: string;
+        text: string;
+      },
+      CandidateCommentResponse
+    >,
+    @Inject(IDeleteCommentUseCase as unknown as new (...args: any[]) => any)
+    private readonly deleteComment: IBaseUseCase<
+      { candidateId: string; commentId: string; authorId: string },
+      void
     >,
   ) {}
 
@@ -227,5 +344,59 @@ export class CandidatesController {
       status: dto.status,
       changedById: user.id,
     });
+  }
+
+  @Post(':id/comments')
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  async addCandidateComment(
+    @Param('id') candidateId: string,
+    @Body() dto: CreateCandidateCommentRequest,
+    @Req() req: Request,
+  ): Promise<CandidateCommentResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.addComment.run({
+      candidateId,
+      authorId: user.id,
+      text: dto.text,
+    });
+  }
+
+  @Get(':id/comments')
+  @HttpCode(200)
+  async getCandidateComments(
+    @Param('id') candidateId: string,
+  ): Promise<CandidateCommentResponse[]> {
+    return await this.getComments.run({ candidateId });
+  }
+
+  @Put(':id/comments/:commentId')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  async updateCandidateComment(
+    @Param('id') candidateId: string,
+    @Param('commentId') commentId: string,
+    @Body() dto: UpdateCandidateCommentRequest,
+    @Req() req: Request,
+  ): Promise<CandidateCommentResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.updateComment.run({
+      candidateId,
+      commentId,
+      authorId: user.id,
+      text: dto.text,
+    });
+  }
+
+  @Delete(':id/comments/:commentId')
+  @Roles(UserRole.HR)
+  @HttpCode(204)
+  async deleteCandidateComment(
+    @Param('id') candidateId: string,
+    @Param('commentId') commentId: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req['_user'] as { id: string };
+    await this.deleteComment.run({ candidateId, commentId, authorId: user.id });
   }
 }
