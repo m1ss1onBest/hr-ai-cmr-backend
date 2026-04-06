@@ -13,8 +13,13 @@ import { ANALYZE_RESUME_USE_CASE_PROVIDER } from './use-cases/analyze-resume/ana
 import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 import { AuthModule } from '../auth/auth.module';
 import { AiModule } from 'src/shared/infrastructure/ai/ai.module';
+import { UPDATE_CANDIDATE_STATUS_USE_CASE_PROVIDER } from './use-cases/update-candidate-status/update-candidate-status.interface';
+import { ADD_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/add-comment/add-comment.interface';
+import { GET_CANDIDATE_COMMENTS_USE_CASE_PROVIDER } from './use-cases/comments/get-comments/get-comments.interface';
+import { UPDATE_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/update-comment/update-comment.interface';
+import { DELETE_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/delete-comment/delete-comment.interface';
 
-export const CANDIDATE_MODULE_PROVIDERS: Provider[] = [
+export const CANDIDATE_MODULE_PROVIDERS = [
   GET_CANDIDATE_USE_CASE_PROVIDER,
   CREATE_CANDIDATE_USE_CASE_PROVIDER,
   SEARCH_CANDIDATES_USE_CASE_PROVIDER,
@@ -22,6 +27,12 @@ export const CANDIDATE_MODULE_PROVIDERS: Provider[] = [
   DELETE_CANDIDATE_USE_CASE_PROVIDER,
   ANALYZE_RESUME_USE_CASE_PROVIDER,
 ];
+  UPDATE_CANDIDATE_STATUS_USE_CASE_PROVIDER,
+  ADD_COMMENT_USE_CASE_PROVIDER,
+  GET_CANDIDATE_COMMENTS_USE_CASE_PROVIDER,
+  UPDATE_COMMENT_USE_CASE_PROVIDER,
+  DELETE_COMMENT_USE_CASE_PROVIDER,
+] as Provider[];
 
 @Module({
   imports: [DatabaseModule, LoggerModule, AuthModule, AiModule],
