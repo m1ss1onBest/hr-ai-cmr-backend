@@ -10,6 +10,8 @@ import {
   Put,
   Query,
   UseGuards,
+  Patch,
+  Req,
 } from '@nestjs/common';
 import { CandidateBaseResponse } from './dto/candidate.base-response';
 import { IGetCandidateUseCase } from './use-cases/get-candidate/get-candidate.interface';
@@ -35,6 +37,9 @@ import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/modules/guards/roles.guard';
 import { Roles } from '../auth/modules/guards/roles.decorator';
 import { UserRole } from 'prisma/generated/enums';
+import { Request } from 'express';
+import { UpdateCandidateStatusRequest } from './dto/update.candidate-status.dto';
+import { IUpdateCandidateStatusUseCase } from './use-cases/update-candidate-status/update-candidate-status.interface';
 
 @Controller({
   version: '1',
@@ -57,6 +62,11 @@ export class CandidatesControllerV1 {
     >,
     @Inject(IDeleteCandidateUseCase)
     private readonly deleteCandidate: IBaseUseCase<{ id: string }, unknown>,
+    @Inject(IUpdateCandidateStatusUseCase)
+    private readonly updateCandidateStatus: IBaseUseCase<
+      { id: string; status: string; changedById: string },
+      CandidateBaseResponse
+    >,
   ) {}
 
   @Get(':id')
@@ -111,6 +121,25 @@ export class CandidatesControllerV1 {
   async remove(@Param('id') id: string): Promise<void> {
     await this.deleteCandidate.run({ id });
   }
+
+  @Patch(':id/status')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  @ApiResponse({ status: 200, description: 'Candidate status updated' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateCandidateStatusRequest,
+    @Req() req: Request,
+  ): Promise<CandidateBaseResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.updateCandidateStatus.run({
+      id,
+      status: dto.status,
+      changedById: user.id,
+    });
+  }
 }
 
 /**
@@ -137,6 +166,11 @@ export class CandidatesController {
     >,
     @Inject(IDeleteCandidateUseCase)
     private readonly deleteCandidate: IBaseUseCase<{ id: string }, unknown>,
+    @Inject(IUpdateCandidateStatusUseCase)
+    private readonly updateCandidateStatus: IBaseUseCase<
+      { id: string; status: string; changedById: string },
+      CandidateBaseResponse
+    >,
   ) {}
 
   @Get(':id')
@@ -177,5 +211,21 @@ export class CandidatesController {
   @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
     await this.deleteCandidate.run({ id });
+  }
+
+  @Patch(':id/status')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateCandidateStatusRequest,
+    @Req() req: Request,
+  ): Promise<CandidateBaseResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.updateCandidateStatus.run({
+      id,
+      status: dto.status,
+      changedById: user.id,
+    });
   }
 }

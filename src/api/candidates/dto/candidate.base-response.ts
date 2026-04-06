@@ -97,4 +97,13 @@ export class CandidateBaseResponse implements ICandidateData {
     example: '2026-03-27T15:30:00.000Z',
   })
   deletedAt?: Date;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description: 'Current candidate status in the funnel',
+    example: 'INTERVIEW',
+  })
+  currentStatus?: string;
 }

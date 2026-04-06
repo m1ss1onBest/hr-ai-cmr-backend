@@ -11,6 +11,7 @@ import { UPDATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/update-candidate
 import { DELETE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/delete-candidate/delete-candidate.interface';
 import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 import { AuthModule } from '../auth/auth.module';
+import { UPDATE_CANDIDATE_STATUS_USE_CASE_PROVIDER } from './use-cases/update-candidate-status/update-candidate-status.interface';
 
 export const CANDIDATE_MODULE_PROVIDERS: Provider[] = [
   GET_CANDIDATE_USE_CASE_PROVIDER,
@@ -18,6 +19,7 @@ export const CANDIDATE_MODULE_PROVIDERS: Provider[] = [
   SEARCH_CANDIDATES_USE_CASE_PROVIDER,
   UPDATE_CANDIDATE_USE_CASE_PROVIDER,
   DELETE_CANDIDATE_USE_CASE_PROVIDER,
+  UPDATE_CANDIDATE_STATUS_USE_CASE_PROVIDER,
 ];
 
 @Module({

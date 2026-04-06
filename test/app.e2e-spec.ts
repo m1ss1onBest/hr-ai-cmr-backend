@@ -7,12 +7,22 @@ process.env.REFRESH_TOKEN_SECRET =
 process.env.REFRESH_TOKEN_EXPIRATION =
   process.env.REFRESH_TOKEN_EXPIRATION ?? '7d';
 
+// MailConfig required vars (tests don't send emails but config validation runs)
+process.env.SMTP_FROM = process.env.SMTP_FROM ?? 'test@example.com';
+process.env.SMTP_HOST = process.env.SMTP_HOST ?? 'localhost';
+process.env.SMTP_PASS = process.env.SMTP_PASS ?? 'test';
+process.env.SMTP_PORT = process.env.SMTP_PORT ?? '2525';
+process.env.SMTP_USER = process.env.SMTP_USER ?? 'test';
+process.env.EMAIL_VERIFICATION_URL =
+  process.env.EMAIL_VERIFICATION_URL ?? 'http://localhost/verify';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/shared/infrastructure/database/prisma.service';
+import { MailService } from '../src/shared/infrastructure/mail/mail.service';
 
 describe('Auth (e2e)', () => {
   let app: INestApplication<App>;
@@ -41,6 +51,10 @@ describe('Auth (e2e)', () => {
             .fn()
             .mockRejectedValue(new Error('Not implemented in test')),
         },
+      })
+      .overrideProvider(MailService)
+      .useValue({
+        sendVerifyEmail: jest.fn().mockResolvedValue(undefined),
       })
       .compile();
 
