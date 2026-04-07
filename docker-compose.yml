@@ -1,21 +1,7 @@
 services:
-  postgres:
-    image: postgres:17
-    container_name: hrcrm_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: hrcrm
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: hrcrm_db 
+  app:
+    build: .
     ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U hrcrm -d hrcrm_db']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
+      - "${APP_PORT}:5000"
+    environment:
+      - PORT=${APP_PORT}
