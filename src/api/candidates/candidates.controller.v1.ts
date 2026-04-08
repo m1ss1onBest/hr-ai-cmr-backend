@@ -12,6 +12,10 @@ import {
   UseGuards,
   Patch,
   Req,
+  BadRequestException,
+  UploadedFile,
+  UseInterceptors,
+  Headers,
 } from '@nestjs/common';
 import { CandidateBaseResponse } from './dto/candidate.base-response';
 import { IGetCandidateUseCase } from './use-cases/get-candidate/get-candidate.interface';
@@ -37,7 +41,7 @@ import {
   ResumeAnalysisResponse,
 } from './dto/analyze-resume.dto';
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
-import { ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/modules/guards/roles.guard';
 import { Roles } from '../auth/modules/guards/roles.decorator';
@@ -54,6 +58,8 @@ import { IAddCommentUseCase } from './use-cases/comments/add-comment/add-comment
 import { IGetCandidateCommentsUseCase } from './use-cases/comments/get-comments/get-comments.interface';
 import { IUpdateCommentUseCase } from './use-cases/comments/update-comment/update-comment.interface';
 import { IDeleteCommentUseCase } from './use-cases/comments/delete-comment/delete-comment.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { IUploadResumeUseCase } from './use-cases/upload-resume/upload-resume.interface';
 
 @Controller({
   version: '1',
@@ -104,6 +110,8 @@ export class CandidatesControllerV1 {
       { candidateId: string; commentId: string; authorId: string },
       void
     >,
+    @Inject(IUploadResumeUseCase)
+    private readonly uploadResume: IUploadResumeUseCase,
   ) {}
 
   @Get(':id')
@@ -249,6 +257,84 @@ export class CandidatesControllerV1 {
     const user = req['_user'] as { id: string };
     await this.deleteComment.run({ candidateId, commentId, authorId: user.id });
   }
+
+  @Post(':id/resume')
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const lower = (file.originalname || '').toLowerCase();
+        const allowedExt = lower.endsWith('.pdf') || lower.endsWith('.docx');
+
+        // Some clients (e.g., node fetch FormData) may send application/octet-stream.
+        const allowedMime = new Set([
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/octet-stream',
+        ]);
+
+        if (!allowedExt) {
+          return cb(
+            new BadRequestException('Only .pdf and .docx files are allowed'),
+            false,
+          );
+        }
+
+        if (file.mimetype && !allowedMime.has(file.mimetype)) {
+          return cb(
+            new BadRequestException('Only .pdf and .docx files are allowed'),
+            false,
+          );
+        }
+
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadCandidateResume(
+    @Param('id') candidateId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+    @Headers('content-type') contentType?: string,
+  ): Promise<{ cvUrl: string }> {
+    const anyReq = req as unknown as { files?: unknown };
+    const files = anyReq.files;
+    const fallbackFile: Express.Multer.File | undefined =
+      file ??
+      (Array.isArray(files) ? (files[0] as Express.Multer.File) : undefined);
+
+    if (!fallbackFile) {
+      throw new BadRequestException(
+        `File is required. Received Content-Type: ${contentType ?? 'unknown'}. ` +
+          'Ensure you send multipart/form-data with field name "file" and do not override Content-Type header manually.',
+      );
+    }
+
+    return await this.uploadResume.run({
+      candidateId,
+      file: {
+        buffer: fallbackFile.buffer,
+        originalname: fallbackFile.originalname,
+        mimetype: fallbackFile.mimetype,
+        size: fallbackFile.size,
+      },
+    });
+  }
+
+  @Get(':id/resume')
+  @HttpCode(200)
+  async getCandidateResume(
+    @Param('id') candidateId: string,
+  ): Promise<{ cvUrl: string }> {
+    const candidate = await this.getCandidate.run(candidateId);
+    if (!candidate.cvUrl) {
+      throw new BadRequestException('Candidate has no resume uploaded');
+    }
+    return { cvUrl: candidate.cvUrl };
+  }
 }
 
 /**
@@ -303,6 +389,8 @@ export class CandidatesController {
       { candidateId: string; commentId: string; authorId: string },
       void
     >,
+    @Inject(IUploadResumeUseCase)
+    private readonly uploadResume: IUploadResumeUseCase,
   ) {}
 
   @Get(':id')
@@ -422,5 +510,82 @@ export class CandidatesController {
   ): Promise<void> {
     const user = req['_user'] as { id: string };
     await this.deleteComment.run({ candidateId, commentId, authorId: user.id });
+  }
+
+  @Post(':id/resume')
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const lower = (file.originalname || '').toLowerCase();
+        const allowedExt = lower.endsWith('.pdf') || lower.endsWith('.docx');
+
+        const allowedMime = new Set([
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/octet-stream',
+        ]);
+
+        if (!allowedExt) {
+          return cb(
+            new BadRequestException('Only .pdf and .docx files are allowed'),
+            false,
+          );
+        }
+
+        if (file.mimetype && !allowedMime.has(file.mimetype)) {
+          return cb(
+            new BadRequestException('Only .pdf and .docx files are allowed'),
+            false,
+          );
+        }
+
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadCandidateResume(
+    @Param('id') candidateId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+    @Headers('content-type') contentType?: string,
+  ): Promise<{ cvUrl: string }> {
+    const anyReq = req as unknown as { files?: unknown };
+    const files = anyReq.files;
+    const fallbackFile: Express.Multer.File | undefined =
+      file ??
+      (Array.isArray(files) ? (files[0] as Express.Multer.File) : undefined);
+
+    if (!fallbackFile) {
+      throw new BadRequestException(
+        `File is required. Received Content-Type: ${contentType ?? 'unknown'}. ` +
+          'Ensure you send multipart/form-data with field name "file" and do not override Content-Type header manually.',
+      );
+    }
+
+    return await this.uploadResume.run({
+      candidateId,
+      file: {
+        buffer: fallbackFile.buffer,
+        originalname: fallbackFile.originalname,
+        mimetype: fallbackFile.mimetype,
+        size: fallbackFile.size,
+      },
+    });
+  }
+
+  @Get(':id/resume')
+  @HttpCode(200)
+  async getCandidateResume(
+    @Param('id') candidateId: string,
+  ): Promise<{ cvUrl: string }> {
+    const candidate = await this.getCandidate.run(candidateId);
+    if (!candidate.cvUrl) {
+      throw new BadRequestException('Candidate has no resume uploaded');
+    }
+    return { cvUrl: candidate.cvUrl };
   }
 }

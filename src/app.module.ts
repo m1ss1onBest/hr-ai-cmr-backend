@@ -9,6 +9,7 @@ import { CandidatesModule } from './api/candidates/candidates.module';
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { JwtAuthMiddleware } from './api/auth/modules/guards/jwt-auth.middleware';
 import { MailModule } from './shared/infrastructure/mail/mail.module';
+import { FilesModule } from './shared/infrastructure/files/files.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MailModule } from './shared/infrastructure/mail/mail.module';
     CandidatesModule,
     LoggerModule,
     MailModule,
+    FilesModule,
   ],
 })
 export class AppModule implements NestModule {
