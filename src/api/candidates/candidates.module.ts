@@ -18,6 +18,8 @@ import { ADD_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/add-comment/
 import { GET_CANDIDATE_COMMENTS_USE_CASE_PROVIDER } from './use-cases/comments/get-comments/get-comments.interface';
 import { UPDATE_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/update-comment/update-comment.interface';
 import { DELETE_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/delete-comment/delete-comment.interface';
+import { UPLOAD_RESUME_USE_CASE_PROVIDER } from './use-cases/upload-resume/upload-resume.interface';
+import { FilesModule } from 'src/shared/infrastructure/files/files.module';
 
 export const CANDIDATE_MODULE_PROVIDERS = [
   GET_CANDIDATE_USE_CASE_PROVIDER,
@@ -31,10 +33,11 @@ export const CANDIDATE_MODULE_PROVIDERS = [
   GET_CANDIDATE_COMMENTS_USE_CASE_PROVIDER,
   UPDATE_COMMENT_USE_CASE_PROVIDER,
   DELETE_COMMENT_USE_CASE_PROVIDER,
+  UPLOAD_RESUME_USE_CASE_PROVIDER,
 ] as Provider[];
 
 @Module({
-  imports: [DatabaseModule, LoggerModule, AuthModule, AiModule],
+  imports: [DatabaseModule, LoggerModule, AuthModule, AiModule, FilesModule],
   controllers: [CandidatesControllerV1, CandidatesController],
   providers: CANDIDATE_MODULE_PROVIDERS,
 })
