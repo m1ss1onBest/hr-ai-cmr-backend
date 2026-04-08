@@ -59,10 +59,7 @@ import { IDeleteCommentUseCase } from './use-cases/comments/delete-comment/delet
   version: '1',
   path: 'candidates',
 })
-@UseGuards(
-  JwtAuthGuard as unknown as new (...args: any[]) => any,
-  RolesGuard as unknown as new (...args: any[]) => any,
-)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class CandidatesControllerV1 {
   constructor(
@@ -87,14 +84,12 @@ export class CandidatesControllerV1 {
       { candidateId: string; authorId: string; text: string },
       CandidateCommentResponse
     >,
-    @Inject(
-      IGetCandidateCommentsUseCase as unknown as new (...args: any[]) => any,
-    )
+    @Inject(IGetCandidateCommentsUseCase)
     private readonly getComments: IBaseUseCase<
       { candidateId: string },
       CandidateCommentResponse[]
     >,
-    @Inject(IUpdateCommentUseCase as unknown as new (...args: any[]) => any)
+    @Inject(IUpdateCommentUseCase)
     private readonly updateComment: IBaseUseCase<
       {
         candidateId: string;
@@ -104,7 +99,7 @@ export class CandidatesControllerV1 {
       },
       CandidateCommentResponse
     >,
-    @Inject(IDeleteCommentUseCase as unknown as new (...args: any[]) => any)
+    @Inject(IDeleteCommentUseCase)
     private readonly deleteComment: IBaseUseCase<
       { candidateId: string; commentId: string; authorId: string },
       void
@@ -263,10 +258,7 @@ export class CandidatesControllerV1 {
 @Controller({
   path: 'candidates',
 })
-@UseGuards(
-  JwtAuthGuard as unknown as new (...args: any[]) => any,
-  RolesGuard as unknown as new (...args: any[]) => any,
-)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class CandidatesController {
   constructor(
@@ -291,14 +283,12 @@ export class CandidatesController {
       { candidateId: string; authorId: string; text: string },
       CandidateCommentResponse
     >,
-    @Inject(
-      IGetCandidateCommentsUseCase as unknown as new (...args: any[]) => any,
-    )
+    @Inject(IGetCandidateCommentsUseCase)
     private readonly getComments: IBaseUseCase<
       { candidateId: string },
       CandidateCommentResponse[]
     >,
-    @Inject(IUpdateCommentUseCase as unknown as new (...args: any[]) => any)
+    @Inject(IUpdateCommentUseCase)
     private readonly updateComment: IBaseUseCase<
       {
         candidateId: string;
@@ -308,7 +298,7 @@ export class CandidatesController {
       },
       CandidateCommentResponse
     >,
-    @Inject(IDeleteCommentUseCase as unknown as new (...args: any[]) => any)
+    @Inject(IDeleteCommentUseCase)
     private readonly deleteComment: IBaseUseCase<
       { candidateId: string; commentId: string; authorId: string },
       void
