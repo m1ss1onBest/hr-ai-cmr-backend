@@ -72,3 +72,5 @@ npx prisma migrate reset
 ```
 
 For more detailed info read official [Prisma Official Documantation](https://www.prisma.io/docs/cli)
+
+test message
