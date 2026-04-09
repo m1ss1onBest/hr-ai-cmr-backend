@@ -83,4 +83,11 @@ export class UsersRepository extends IBaseUserRepository {
       },
     };
   }
+
+  async deleteOne(id: string): Promise<UserModel> {
+    return await this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
 }

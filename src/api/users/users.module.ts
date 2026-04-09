@@ -4,8 +4,12 @@ import { DatabaseModule } from 'src/shared/infrastructure/database/database.modu
 import { UsersService } from './users.service';
 import { SEARCH_USERS_USE_CASE_PROVIDER } from './use-cases/search-users/search-users.interface';
 import { AuthModule } from '../auth/auth.module';
+import { DELETE_USER_USE_CASE_PROVIDER } from './use-cases/delete-user/delete-user.interface';
 
-export const USERS_MODULE_PROVIDERS = [SEARCH_USERS_USE_CASE_PROVIDER];
+export const USERS_MODULE_PROVIDERS = [
+  SEARCH_USERS_USE_CASE_PROVIDER,
+  DELETE_USER_USE_CASE_PROVIDER,
+];
 
 @Module({
   imports: [DatabaseModule, AuthModule],
