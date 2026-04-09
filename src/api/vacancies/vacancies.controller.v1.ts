@@ -35,10 +35,7 @@ import { UserRole } from 'prisma/generated/enums';
   version: '1',
   path: 'vacancies',
 })
-@UseGuards(
-  JwtAuthGuard as unknown as new (...args: any[]) => any,
-  RolesGuard as unknown as new (...args: any[]) => any,
-)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class VacanciesControllerV1 {
   constructor(
