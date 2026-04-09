@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '../../../prisma/generated/enums';
@@ -28,37 +29,50 @@ export class AuthService {
     refreshToken: string;
     user: AuthUserResponse;
   }> {
-    const existing = await this.usersRepo.findOneByEmail(dto.email);
-    if (existing) {
-      throw new ConflictException('Email already taken');
+    try {
+      return await this.usersRepo.transaction(async (tx) => {
+        const existing = await tx.user.findUnique({
+          where: { email: dto.email },
+        });
+        if (existing) {
+          throw new ConflictException('Email already taken');
+        }
+
+        const passwordHash = await bcrypt.hash(dto.password, 10);
+
+        const user = await tx.user.create({
+          data: {
+            email: dto.email,
+            name: dto.name,
+            password: passwordHash,
+            role: UserRole.HR,
+          },
+        });
+
+        const payload = {
+          sub: user.id,
+          email: user.email,
+          role: user.role,
+          name: user.name,
+        };
+
+        const accessToken = await this.jwtService.generateAccessToken(payload);
+        const { token: refreshToken } =
+          await this.jwtService.generateRefreshToken(payload);
+
+        await this.mailService.sendVerifyEmail(user.email);
+
+        const { password: _password, ...safeUser } = user;
+
+        return { accessToken, refreshToken, user: safeUser };
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        throw new ConflictException('Email already taken');
+      }
+      if (e instanceof ConflictException) throw e;
+      throw new InternalServerErrorException('Failed to register user');
     }
-
-    const passwordHash = await bcrypt.hash(dto.password, 10);
-
-    const user = await this.usersRepo.create({
-      email: dto.email,
-      name: dto.name,
-      password: passwordHash,
-      role: UserRole.HR,
-    });
-
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-    };
-
-    const accessToken = await this.jwtService.generateAccessToken(payload);
-    const { token: refreshToken } =
-      await this.jwtService.generateRefreshToken(payload);
-
-    await this.mailService.sendVerifyEmail(user.email);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...safeUser } = user;
-
-    return { accessToken, refreshToken, user: safeUser };
   }
 
   async login(dto: LoginUserRequest): Promise<{
@@ -87,8 +101,7 @@ export class AuthService {
     const { token: refreshToken } =
       await this.jwtService.generateRefreshToken(payload);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...safeUser } = user;
+    const { password: _password, ...safeUser } = user;
 
     return { accessToken, refreshToken, user: safeUser };
   }
