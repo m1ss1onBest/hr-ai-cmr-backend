@@ -83,4 +83,12 @@ export class UsersRepository extends IBaseUserRepository {
       },
     };
   }
+
+  async transaction<T>(
+    fn: (
+      tx: import('../../../../../prisma/generated/client').PrismaClient,
+    ) => Promise<T>,
+  ): Promise<T> {
+    return await this.prisma.$transaction<T>(fn);
+  }
 }
