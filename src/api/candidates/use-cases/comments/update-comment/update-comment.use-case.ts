@@ -27,7 +27,9 @@ export class UpdateCommentUseCase {
       });
 
       // Return updated with author by refetching list
-      const fullList = await this.commentsRepo.findManyByCandidateId(request.candidateId);
+      const fullList = await this.commentsRepo.findManyByCandidateId(
+        request.candidateId,
+      );
       const full = fullList.find((c) => c.id === updated.id) ?? updated;
 
       this.logger.log(`Comment updated | id=${updated.id}`);
@@ -37,4 +39,3 @@ export class UpdateCommentUseCase {
     }
   }
 }
-

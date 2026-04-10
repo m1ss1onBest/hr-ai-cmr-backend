@@ -17,9 +17,7 @@ const STATUS_INPUT_TO_ENUM: Record<string, CandidateStatus> = {
 };
 
 @Injectable()
-export class UpdateCandidateStatusUseCase
-  implements IUpdateCandidateStatusUseCase
-{
+export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCase {
   constructor(
     private readonly logger: EventHandlerLogger,
     private readonly candidatesRepo: CandidatesRepository,

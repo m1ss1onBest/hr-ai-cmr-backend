@@ -54,7 +54,11 @@ export class VacanciesControllerV1 {
   @Post()
   @Roles(UserRole.HR)
   @HttpCode(201)
-  @ApiResponse({ status: 201, description: 'Vacancy created', type: CreateVacancyResponse })
+  @ApiResponse({
+    status: 201,
+    description: 'Vacancy created',
+    type: CreateVacancyResponse,
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async create(
@@ -70,14 +74,22 @@ export class VacanciesControllerV1 {
 
   @Get()
   @HttpCode(200)
-  @ApiResponse({ status: 200, description: 'List of vacancies', type: [VacancyBaseResponse] })
+  @ApiResponse({
+    status: 200,
+    description: 'List of vacancies',
+    type: [VacancyBaseResponse],
+  })
   async findAll(): Promise<VacancyBaseResponse[]> {
     return await this.getAllVacancies.run();
   }
 
   @Get(':id')
   @HttpCode(200)
-  @ApiResponse({ status: 200, description: 'Vacancy found', type: VacancyBaseResponse })
+  @ApiResponse({
+    status: 200,
+    description: 'Vacancy found',
+    type: VacancyBaseResponse,
+  })
   @ApiResponse({ status: 404, description: 'Vacancy not found' })
   async findOne(@Param('id') id: string): Promise<VacancyBaseResponse> {
     return await this.getVacancy.run(id);
@@ -86,7 +98,11 @@ export class VacanciesControllerV1 {
   @Put(':id')
   @Roles(UserRole.HR)
   @HttpCode(200)
-  @ApiResponse({ status: 200, description: 'Vacancy updated', type: UpdateVacancyResponse })
+  @ApiResponse({
+    status: 200,
+    description: 'Vacancy updated',
+    type: UpdateVacancyResponse,
+  })
   @ApiResponse({ status: 404, description: 'Vacancy not found' })
   async update(
     @Param('id') id: string,

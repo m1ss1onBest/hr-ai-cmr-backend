@@ -14,4 +14,3 @@ export abstract class IFileStorage {
    */
   abstract resolveLocalPath(urlOrPath: string): string | null;
 }
-

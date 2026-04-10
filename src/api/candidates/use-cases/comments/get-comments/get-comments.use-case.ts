@@ -14,16 +14,21 @@ export class GetCommentsUseCase {
     logger.setContext(GetCommentsUseCase.name);
   }
 
-  async run(request: { candidateId: string }): Promise<CandidateCommentResponse[]> {
+  async run(request: {
+    candidateId: string;
+  }): Promise<CandidateCommentResponse[]> {
     try {
-      const candidate = await this.candidatesRepo.findOneById(request.candidateId);
+      const candidate = await this.candidatesRepo.findOneById(
+        request.candidateId,
+      );
       if (!candidate) throw new NotFoundException('Candidate');
 
-      const comments = await this.commentsRepo.findManyByCandidateId(request.candidateId);
+      const comments = await this.commentsRepo.findManyByCandidateId(
+        request.candidateId,
+      );
       return comments as unknown as CandidateCommentResponse[];
     } catch (err) {
       this.logger.badRequest('Failed to get candidate comments', err);
     }
   }
 }
-

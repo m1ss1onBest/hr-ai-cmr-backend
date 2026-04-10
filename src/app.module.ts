@@ -10,6 +10,8 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { JwtAuthMiddleware } from './api/auth/modules/guards/jwt-auth.middleware';
 import { MailModule } from './shared/infrastructure/mail/mail.module';
 import { FilesModule } from './shared/infrastructure/files/files.module';
+import { ResumeModule } from './api/resume/resume.module';
+import { StorageModule } from './shared/infrastructure/storage/storage.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { FilesModule } from './shared/infrastructure/files/files.module';
     LoggerModule,
     MailModule,
     FilesModule,
+    ResumeModule,
+    StorageModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { IBaseUserRepository } from 'src/shared/contracts/use-cases/base.repository';
 import { Comment, Prisma } from 'prisma/generated/client';
 
@@ -61,4 +65,3 @@ export class CommentsRepository extends IBaseUserRepository {
     });
   }
 }
-

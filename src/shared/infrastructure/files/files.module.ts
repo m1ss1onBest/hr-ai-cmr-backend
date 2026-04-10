@@ -15,4 +15,3 @@ import { IFileStorage } from './storage/storage.interface';
   exports: [IFileStorage],
 })
 export class FilesModule {}
-

@@ -12,7 +12,9 @@ import { DisabledAiProvider } from './providers/disabled-ai.provider';
     {
       provide: IAiProvider,
       useFactory: (cfg: { apiKey?: string }) => {
-        return cfg?.apiKey ? new GeminiProvider(cfg as any) : new DisabledAiProvider();
+        return cfg?.apiKey
+          ? new GeminiProvider(cfg as any)
+          : new DisabledAiProvider();
       },
       inject: [aiConfig.KEY],
     },

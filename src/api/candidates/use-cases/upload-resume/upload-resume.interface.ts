@@ -19,6 +19,6 @@ export abstract class IUploadResumeUseCase extends IBaseUseCase<
 
 export const UPLOAD_RESUME_USE_CASE_PROVIDER: Provider = {
   provide: IUploadResumeUseCase,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   useClass: UploadResumeUseCase,
 };

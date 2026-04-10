@@ -44,7 +44,7 @@ describe('Candidates status update (e2e)', () => {
     };
   };
 
-  const getPrismaMock = () => app.get(PrismaService) as unknown as PrismaMock;
+  const getPrismaMock = () => app.get(PrismaService);
 
   const makeAuthHeader = async (userId: string) => {
     const jwt = app.get(IJwtTokensService);

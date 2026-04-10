@@ -15,7 +15,7 @@ export const REPOSITORIES: Provider[] = [
 ];
 
 @Module({
-  providers: [...(REPOSITORIES as Provider[]), PrismaService],
-  exports: [...(REPOSITORIES as Provider[]), PrismaService],
+  providers: [...REPOSITORIES, PrismaService],
+  exports: [...REPOSITORIES, PrismaService],
 })
 export class DatabaseModule {}
