@@ -2,9 +2,10 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client } from 'minio';
 import { StorageConfig } from '../storage.config';
 import { Readable } from 'stream';
+import { IStorageService } from '../storage.interface';
 
 @Injectable()
-export class MinioService implements OnModuleInit {
+export class MinioService implements OnModuleInit, IStorageService {
   private client: Client;
   private bucket: string;
 

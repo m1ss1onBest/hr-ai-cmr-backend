@@ -19,3 +19,19 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    command: >
+      valkey-server
+      --requirepass ${VALKEY_PASSWORD}
+    ports:
+      - '6379:6379'
+    volumes:
+      - valkey_data:/data
+    restart: unless-stopped
+
+volumes:
+  minio_data:
+  valkey_data:

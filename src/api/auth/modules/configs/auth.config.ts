@@ -22,4 +22,9 @@ export class AuthConfig {
   @IsMsString()
   public readonly REFRESH_TOKEN_EXPIRATION: StringValue = process.env
     .REFRESH_TOKEN_EXPIRATION as StringValue;
+
+  @IsNotEmpty()
+  @IsMsString()
+  public readonly RESET_PASSWORD_EXPIRATION: StringValue = process.env
+    .RESET_PASSWORD_EXPIRATION as StringValue;
 }

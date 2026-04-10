@@ -11,14 +11,15 @@ import {
   UnauthorizedException,
   InternalServerErrorException,
   ConflictException,
+  Optional,
 } from '@nestjs/common';
 
 type HttpExceptionConstructor = new (message: string) => any;
 
 @Injectable()
 export class EventHandlerLogger extends Logger {
-  constructor(context: string) {
-    super(context);
+  constructor(@Optional() context?: string) {
+    super(context || '');
   }
 
   setContext(ctx?: string) {

@@ -12,6 +12,8 @@ import { MailModule } from './shared/infrastructure/mail/mail.module';
 import { FilesModule } from './shared/infrastructure/files/files.module';
 import { ResumeModule } from './api/resume/resume.module';
 import { StorageModule } from './shared/infrastructure/storage/storage.module';
+import { RedisModule } from './shared/infrastructure/redis/redis.module';
+import { CryptoModule } from './shared/infrastructure/crypto/crypto.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { StorageModule } from './shared/infrastructure/storage/storage.module';
     FilesModule,
     ResumeModule,
     StorageModule,
+    RedisModule,
+    CryptoModule,
   ],
 })
 export class AppModule implements NestModule {
