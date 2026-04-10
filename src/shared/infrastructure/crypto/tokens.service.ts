@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import bcrypt from 'bcryptjs/umd/types';
+import bcrypt from 'bcryptjs';
 import { createHash, randomBytes } from 'crypto';
 
 @Injectable()
