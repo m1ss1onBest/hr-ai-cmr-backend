@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import bcrypt from 'bcryptjs/umd/types';
 import { createHash, randomBytes } from 'crypto';
 
 @Injectable()
@@ -7,7 +8,15 @@ export class TokensSerivce {
 
   generateToken(): { value: string; hash: string } {
     const token = randomBytes(32).toString('hex');
-    const hash = createHash('sha256').update(token).digest('hex');
+    const hash = this.hash(token);
     return { value: token, hash };
+  }
+
+  hash(str: string): string {
+    return createHash('sha256').update(str).digest('hex');
+  }
+
+  async hashPassword(str: string): Promise<string> {
+    return await bcrypt.hash(str, 10);
   }
 }

@@ -16,6 +16,7 @@ import { MailModule } from 'src/shared/infrastructure/mail/mail.module';
 import { RedisModule } from 'src/shared/infrastructure/redis/redis.module';
 import { CryptoModule } from 'src/shared/infrastructure/crypto/crypto.module';
 import { FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER } from './use-cases/forgot-password-request/forgot-password-request.interface';
+import { SET_PASSWORD_USE_CASE_PROVIDRE } from './use-cases/set-password/set-password.interface';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER } from './use-cases/forgot-pa
     REGISTER_USE_CASE_PROVIDER,
     LOGIN_USE_CASE_PROVIDER,
     FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER,
+    SET_PASSWORD_USE_CASE_PROVIDRE,
   ],
   exports: [
     JWT_TOKENS_SERVICE_PROVIDER,
@@ -54,6 +56,8 @@ import { FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER } from './use-cases/forgot-pa
     RolesGuard,
     REGISTER_USE_CASE_PROVIDER,
     LOGIN_USE_CASE_PROVIDER,
+    FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER,
+    SET_PASSWORD_USE_CASE_PROVIDRE,
   ],
 })
 export class AuthModule {}

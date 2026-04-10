@@ -25,6 +25,11 @@ import { ApiResponse } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { ForgotPasswordRequestResponse } from './dto/forgot-password-request.dto';
 import { IForgotPasswordRequestUseCase } from './use-cases/forgot-password-request/forgot-password-request.interface';
+import {
+  SetPasswordRequest,
+  SetPasswordResponse,
+} from './dto/set-password.dto';
+import { SetPasswordUseCase } from './use-cases/set-password/set-password.use-case';
 
 function setAuthCookies(
   res: Response,
@@ -65,6 +70,7 @@ export class AuthControllerV1 {
     private readonly authService: AuthService,
     private readonly authConfig: AuthConfig,
     private readonly forgotPasswordRequestUseCase: IForgotPasswordRequestUseCase,
+    private readonly setPasswordUseCase: SetPasswordUseCase,
   ) {}
 
   @Post('register')
@@ -159,5 +165,13 @@ export class AuthControllerV1 {
     @Param('email') email: string,
   ): Promise<ForgotPasswordRequestResponse> {
     return await this.forgotPasswordRequestUseCase.run(email);
+  }
+
+  @Post('set-password')
+  @HttpCode(200)
+  async setPassword(
+    @Body() request: SetPasswordRequest,
+  ): Promise<SetPasswordResponse> {
+    return await this.setPasswordUseCase.run(request);
   }
 }
