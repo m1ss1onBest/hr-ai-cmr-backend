@@ -30,6 +30,7 @@ import {
   SetPasswordResponse,
 } from './dto/set-password.dto';
 import { SetPasswordUseCase } from './use-cases/set-password/set-password.use-case';
+import { ISetPasswordUseCase } from './use-cases/set-password/set-password.interface';
 
 function setAuthCookies(
   res: Response,
@@ -70,7 +71,7 @@ export class AuthControllerV1 {
     private readonly authService: AuthService,
     private readonly authConfig: AuthConfig,
     private readonly forgotPasswordRequestUseCase: IForgotPasswordRequestUseCase,
-    private readonly setPasswordUseCase: SetPasswordUseCase,
+    private readonly setPasswordUseCase: ISetPasswordUseCase,
   ) {}
 
   @Post('register')

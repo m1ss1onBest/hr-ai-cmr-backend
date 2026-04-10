@@ -11,7 +11,7 @@ export abstract class ISetPasswordUseCase extends IBaseUseCase<
   SetPasswordResponse
 > {}
 
-export const SET_PASSWORD_USE_CASE_PROVIDRE: Provider = {
+export const SET_PASSWORD_USE_CASE_PROVIDER: Provider = {
   provide: ISetPasswordUseCase,
   useClass: SetPasswordUseCase,
 };
