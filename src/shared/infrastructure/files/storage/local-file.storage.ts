@@ -67,4 +67,3 @@ export class LocalFileStorage extends IFileStorage {
     return '';
   }
 }
-

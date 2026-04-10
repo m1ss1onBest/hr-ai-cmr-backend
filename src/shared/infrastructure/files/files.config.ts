@@ -5,4 +5,3 @@ export default registerAs('files', () => ({
   uploadDir: process.env.UPLOAD_DIR || 'uploads',
   maxSizeBytes: parseInt(process.env.RESUME_MAX_SIZE_BYTES || '10485760', 10), // 10MB
 }));
-

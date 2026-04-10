@@ -20,7 +20,9 @@ export class AddCommentUseCase {
     text: string;
   }): Promise<CandidateCommentResponse> {
     try {
-      const candidate = await this.candidatesRepo.findOneById(request.candidateId);
+      const candidate = await this.candidatesRepo.findOneById(
+        request.candidateId,
+      );
       if (!candidate) throw new NotFoundException('Candidate');
 
       const created = await this.commentsRepo.create({
@@ -30,7 +32,9 @@ export class AddCommentUseCase {
       });
 
       // fetch with author to return full object
-      const comments = await this.commentsRepo.findManyByCandidateId(request.candidateId);
+      const comments = await this.commentsRepo.findManyByCandidateId(
+        request.candidateId,
+      );
       const full = comments.find((c) => c.id === created.id);
       if (!full) {
         // fallback minimal
@@ -47,4 +51,3 @@ export class AddCommentUseCase {
     }
   }
 }
-

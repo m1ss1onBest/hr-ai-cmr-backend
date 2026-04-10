@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateCandidateCommentRequest {
   @IsString()
@@ -66,4 +72,3 @@ export class CandidateCommentResponse {
   @ApiProperty({ type: CommentAuthorDto })
   author: CommentAuthorDto;
 }
-

@@ -1,8 +1,5 @@
 import { Module, type Provider } from '@nestjs/common';
-import {
-  CandidatesControllerV1,
-  CandidatesController,
-} from './candidates.controller.v1';
+import { CandidatesControllerV1 } from './candidates.controller.v1';
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
 import { GET_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/get-candidate/get-candidate.interface';
 import { CREATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/create/create-candidate.interface';
@@ -38,7 +35,7 @@ export const CANDIDATE_MODULE_PROVIDERS = [
 
 @Module({
   imports: [DatabaseModule, LoggerModule, AuthModule, AiModule, FilesModule],
-  controllers: [CandidatesControllerV1, CandidatesController],
+  controllers: [CandidatesControllerV1],
   providers: CANDIDATE_MODULE_PROVIDERS,
 })
 export class CandidatesModule {}

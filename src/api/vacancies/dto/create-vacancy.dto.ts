@@ -22,7 +22,8 @@ export class CreateVacancyRequest {
   @IsNotEmpty()
   @ApiProperty({
     description: 'Vacancy description',
-    example: 'We are looking for an experienced backend developer to join our team...',
+    example:
+      'We are looking for an experienced backend developer to join our team...',
   })
   description: string;
 
@@ -52,6 +53,5 @@ export class CreateVacancyRequest {
   })
   techStack: string[];
 }
-
 
 export class CreateVacancyResponse extends VacancyBaseResponse {}
