@@ -41,3 +41,5 @@ export class AppModule implements NestModule {
     consumer.apply(JwtAuthMiddleware).forRoutes('*');
   }
 }
+
+i = ]4${'a'};
