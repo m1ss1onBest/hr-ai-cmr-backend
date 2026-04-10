@@ -1,4 +1,4 @@
 export abstract class IMailService {
   abstract sendVerifyEmail(email: string);
-  abstract sendForgotPassword(email: string);
+  abstract sendForgotPassword(email: string, token: string);
 }

@@ -13,7 +13,10 @@ import { JwtAuthGuard } from './modules/guards/jwt-auth.guard';
 import { JwtAuthMiddleware } from './modules/guards/jwt-auth.middleware';
 import { RolesGuard } from './modules/guards/roles.guard';
 import { MailModule } from 'src/shared/infrastructure/mail/mail.module';
-import { AuthController } from './auth.controller';
+import { RedisModule } from 'src/shared/infrastructure/redis/redis.module';
+import { CryptoModule } from 'src/shared/infrastructure/crypto/crypto.module';
+import { FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER } from './use-cases/forgot-password-request/forgot-password-request.interface';
+import { SET_PASSWORD_USE_CASE_PROVIDRE } from './use-cases/set-password/set-password.interface';
 
 @Module({
   imports: [
@@ -29,8 +32,10 @@ import { AuthController } from './auth.controller';
     DatabaseModule,
     LoggerModule,
     MailModule,
+    RedisModule,
+    CryptoModule,
   ],
-  controllers: [AuthControllerV1, AuthController],
+  controllers: [AuthControllerV1],
   providers: [
     AuthService,
     JWT_TOKENS_SERVICE_PROVIDER,
@@ -40,6 +45,8 @@ import { AuthController } from './auth.controller';
     RolesGuard,
     REGISTER_USE_CASE_PROVIDER,
     LOGIN_USE_CASE_PROVIDER,
+    FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER,
+    SET_PASSWORD_USE_CASE_PROVIDRE,
   ],
   exports: [
     JWT_TOKENS_SERVICE_PROVIDER,
@@ -49,6 +56,8 @@ import { AuthController } from './auth.controller';
     RolesGuard,
     REGISTER_USE_CASE_PROVIDER,
     LOGIN_USE_CASE_PROVIDER,
+    FORGOT_PASSWORD_REQUEST_USE_CASE_PROVIDER,
+    SET_PASSWORD_USE_CASE_PROVIDRE,
   ],
 })
 export class AuthModule {}

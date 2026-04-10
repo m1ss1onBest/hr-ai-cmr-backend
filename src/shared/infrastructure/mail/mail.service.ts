@@ -26,8 +26,16 @@ export class MailService implements IMailService {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendForgotPassword(email: string) {
-    throw new Error('Method not implemented.');
+  async sendForgotPassword(email: string, token: string) {
+    if (!this.mailConfig.isEnabled) return;
+
+    const link = this.mailConfig.EMAIL_FORGOT_PASSWORD_URL;
+
+    await this.mailer.sendMail({
+      to: email,
+      subject: 'Reset your password',
+      template: 'forgot-password',
+      context: { forgotPasswordUrl: `${link}?token=${token}` },
+    });
   }
 }

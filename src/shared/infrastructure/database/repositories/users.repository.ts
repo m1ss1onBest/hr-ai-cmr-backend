@@ -84,6 +84,13 @@ export class UsersRepository extends IBaseUserRepository {
     };
   }
 
+  async updatePassword(id: string, newPass: string): Promise<UserModel> {
+    return await this.prisma.user.update({
+      where: { id },
+      data: { password: newPass },
+    });
+  }
+
   async transaction<T>(
     fn: (
       tx: import('../../../../../prisma/generated/client').PrismaClient,

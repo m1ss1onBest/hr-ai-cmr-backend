@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateIf,
+} from 'class-validator';
 import { Config } from '../../config';
 
 @Config()
@@ -14,28 +20,34 @@ export class MailConfig {
   @ValidateIf((o: MailConfig) => !!o.SMTP_HOST)
   @IsString()
   @IsNotEmpty()
-  public readonly SMTP_FROM: string = process.env.SMTP_FROM ?? '';
+  public readonly SMTP_FROM: string = process.env.SMTP_FROM!;
 
   @ValidateIf((o: MailConfig) => !!o.SMTP_HOST)
   @IsString()
   @IsNotEmpty()
-  public readonly SMTP_PASS: string = process.env.SMTP_PASS ?? '';
+  public readonly SMTP_PASS: string = process.env.SMTP_PASS!;
 
   @ValidateIf((o: MailConfig) => !!o.SMTP_HOST)
   @IsString()
   @IsNotEmpty()
-  public readonly SMTP_PORT: string = process.env.SMTP_PORT ?? '';
+  public readonly SMTP_PORT: string = process.env.SMTP_PORT!;
 
   @ValidateIf((o: MailConfig) => !!o.SMTP_HOST)
   @IsString()
   @IsNotEmpty()
-  public readonly SMTP_USER: string = process.env.SMTP_USER ?? '';
+  public readonly SMTP_USER: string = process.env.SMTP_USER!;
 
   @ValidateIf((o: MailConfig) => !!o.SMTP_HOST)
-  @IsString()
+  @IsUrl()
   @IsNotEmpty()
   public readonly EMAIL_VERIFICATION_URL: string =
-    process.env.EMAIL_VERIFICATION_URL ?? '';
+    process.env.EMAIL_VERIFICATION_URL!;
+
+  @ValidateIf((o: MailConfig) => !!o.SMTP_HOST)
+  @IsUrl()
+  @IsNotEmpty()
+  public readonly EMAIL_FORGOT_PASSWORD_URL: string =
+    process.env.EMAIL_FORGOT_PASSWORD_URL!;
 
   get isEnabled(): boolean {
     return !!this.SMTP_HOST;
