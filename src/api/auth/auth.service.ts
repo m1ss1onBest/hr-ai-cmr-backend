@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '../../../prisma/generated/enums';
@@ -17,6 +18,8 @@ type AuthUserResponse = Omit<User, 'password'>;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly jwtService: IJwtTokensService,
@@ -30,7 +33,8 @@ export class AuthService {
     user: AuthUserResponse;
   }> {
     try {
-      return await this.usersRepo.transaction(async (tx) => {
+      // 1) Create user + tokens inside a transaction
+      const result = await this.usersRepo.transaction(async (tx) => {
         const existing = await tx.user.findUnique({
           where: { email: dto.email },
         });
@@ -60,14 +64,32 @@ export class AuthService {
         const { token: refreshToken } =
           await this.jwtService.generateRefreshToken(payload);
 
-        await this.mailService.sendVerifyEmail(user.email);
-
-        const { password: _password, ...safeUser } = user;
+        // omit password explicitly to avoid unused-var lint issues
+        const safeUser = (({ password, ...rest }) => rest)(user);
 
         return { accessToken, refreshToken, user: safeUser };
       });
-    } catch (e: any) {
-      if (e?.code === 'P2002') {
+
+      // 2) Side effects *after* transaction.
+      // In production we keep it strict (fail if mail can't be sent).
+      // In local/dev we don't block registration due to SMTP/network issues.
+      try {
+        await this.mailService.sendVerifyEmail(result.user.email);
+      } catch (e: unknown) {
+        const isProd = process.env.NODE_ENV === 'production';
+        this.logger.error('Verify email send failed', e as any);
+
+        if (isProd) {
+          await this.usersRepo.deleteByEmail(result.user.email);
+          throw e;
+        }
+      }
+
+      return result;
+    } catch (e: unknown) {
+      this.logger.error('Register failed', e as any);
+      const err = e as { code?: unknown } | undefined;
+      if (err?.code === 'P2002') {
         throw new ConflictException('Email already taken');
       }
       if (e instanceof ConflictException) throw e;
@@ -101,7 +123,7 @@ export class AuthService {
     const { token: refreshToken } =
       await this.jwtService.generateRefreshToken(payload);
 
-    const { password: _password, ...safeUser } = user;
+    const safeUser = (({ password, ...rest }) => rest)(user);
 
     return { accessToken, refreshToken, user: safeUser };
   }
