@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client } from 'minio';
-import { StorageConfig } from '../storage.config';
 import { Readable } from 'stream';
 import { IStorageService } from '../storage.interface';
+import { StorageConfig } from '../storage.config';
 
 @Injectable()
 export class MinioService implements OnModuleInit, IStorageService {
@@ -16,8 +16,8 @@ export class MinioService implements OnModuleInit, IStorageService {
       endPoint: this.config.STORAGE_HOST,
       port: this.config.STORAGE_PORT,
       useSSL: this.config.STORAGE_USE_SSL,
-      accessKey: this.config.STORAGE_ACCESS_KEY,
-      secretKey: this.config.STORAGE_SECRET_KEY,
+      accessKey: this.config.MINIO_ROOT_USER,
+      secretKey: this.config.MINIO_ROOT_PASSWORD,
     });
 
     this.bucket = this.config.STORAGE_BUCKET;
