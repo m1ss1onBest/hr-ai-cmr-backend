@@ -13,6 +13,8 @@ import {
   LoginUserResponse,
   RegisterUserRequest,
   RegisterUserResponse,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
 } from './dto';
 import { AuthConfig } from './modules/configs';
 import ms from 'ms';
@@ -93,10 +95,9 @@ export class AuthControllerV1 {
     @Body() dto: RegisterUserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } =
-      await this.authService.register(dto);
+    const { user } = await this.authService.register(dto);
 
-    setAuthCookies(res, this.authConfig, accessToken, refreshToken);
+    // Don't set auth cookies until email is verified.
     return { user };
   }
 
@@ -174,5 +175,20 @@ export class AuthControllerV1 {
     @Body() request: SetPasswordRequest,
   ): Promise<SetPasswordResponse> {
     return await this.setPasswordUseCase.run(request);
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(
+    @Body() dto: VerifyEmailRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<VerifyEmailResponse> {
+    const { accessToken, refreshToken } = await this.authService.verifyEmail(
+      dto.email,
+      dto.token,
+    );
+
+    setAuthCookies(res, this.authConfig, accessToken, refreshToken);
+    return { ok: true };
   }
 }
