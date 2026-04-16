@@ -98,4 +98,10 @@ export class UsersRepository extends IBaseUserRepository {
   ): Promise<T> {
     return await this.prisma.$transaction<T>(fn);
   }
+
+  async deleteByEmail(email: string): Promise<void> {
+    await this.prisma.user.delete({
+      where: { email },
+    });
+  }
 }

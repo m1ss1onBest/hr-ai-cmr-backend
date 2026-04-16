@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '../../../prisma/generated/enums';
@@ -17,6 +18,8 @@ type AuthUserResponse = Omit<User, 'password'>;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly jwtService: IJwtTokensService,
@@ -30,7 +33,8 @@ export class AuthService {
     user: AuthUserResponse;
   }> {
     try {
-      return await this.usersRepo.transaction(async (tx) => {
+      // 1) Create user + tokens inside a transaction
+      const result = await this.usersRepo.transaction(async (tx) => {
         const existing = await tx.user.findUnique({
           where: { email: dto.email },
         });
@@ -40,34 +44,57 @@ export class AuthService {
 
         const passwordHash = await bcrypt.hash(dto.password, 10);
 
+        const token = Array.from({ length: 32 }, () =>
+          Math.floor(Math.random() * 16).toString(16),
+        ).join('');
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 min
+
         const user = await tx.user.create({
           data: {
             email: dto.email,
             name: dto.name,
             password: passwordHash,
             role: UserRole.HR,
+            isEmailVerified: false,
+            emailVerificationToken: token,
+            emailVerificationExpiresAt: expiresAt,
           },
         });
 
-        const payload = {
-          sub: user.id,
-          email: user.email,
-          role: user.role,
-          name: user.name,
-        };
+        const accessToken = '';
+        const refreshToken = '';
 
-        const accessToken = await this.jwtService.generateAccessToken(payload);
-        const { token: refreshToken } =
-          await this.jwtService.generateRefreshToken(payload);
-
-        await this.mailService.sendVerifyEmail(user.email);
-
-        const { password: _password, ...safeUser } = user;
+        const safeUser = (({ password, ...rest }) => rest)(user);
 
         return { accessToken, refreshToken, user: safeUser };
       });
-    } catch (e: any) {
-      if (e?.code === 'P2002') {
+
+      const fresh = await this.usersRepo.findOneByEmail(result.user.email);
+      this.logger.log(`Verification token generated for ${result.user.email}`);
+
+      // 2) Side effects *after* transaction.
+
+      try {
+        await this.mailService.sendVerifyEmail(
+          result.user.email,
+          fresh?.emailVerificationToken ?? '',
+        );
+      } catch (e: unknown) {
+        const isProd = process.env.NODE_ENV === 'production';
+        this.logger.error('Verify email send failed', e as any);
+
+        if (isProd) {
+          await this.usersRepo.deleteByEmail(result.user.email);
+          throw e;
+        }
+      }
+
+      return result;
+    } catch (e: unknown) {
+      this.logger.error('Register failed', e as any);
+      const err = e as { code?: unknown } | undefined;
+      if (err?.code === 'P2002') {
         throw new ConflictException('Email already taken');
       }
       if (e instanceof ConflictException) throw e;
@@ -90,6 +117,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isEmailVerified) {
+      this.logger.warn(`Login blocked: email not verified (${user.email})`);
+      throw new UnauthorizedException('Email is not verified');
+    }
+
     const payload = {
       sub: user.id,
       email: user.email,
@@ -101,7 +133,7 @@ export class AuthService {
     const { token: refreshToken } =
       await this.jwtService.generateRefreshToken(payload);
 
-    const { password: _password, ...safeUser } = user;
+    const safeUser = (({ password, ...rest }) => rest)(user);
 
     return { accessToken, refreshToken, user: safeUser };
   }
@@ -140,5 +172,67 @@ export class AuthService {
     if (!payload) return;
 
     this.refreshStore.revoke(payload.jti);
+  }
+
+  async verifyEmail(
+    email: string,
+    token: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const user = await this.usersRepo.findOneByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid verification data');
+    }
+
+    if (user.isEmailVerified) {
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+      };
+      const accessToken = await this.jwtService.generateAccessToken(payload);
+      const { token: refreshToken } =
+        await this.jwtService.generateRefreshToken(payload);
+      return { accessToken, refreshToken };
+    }
+
+    if (!user.emailVerificationToken || user.emailVerificationToken !== token) {
+      this.logger.warn(`Email verification failed (invalid token) for ${email}`);
+      throw new UnauthorizedException('Invalid verification token');
+    }
+
+    if (
+      user.emailVerificationExpiresAt &&
+      user.emailVerificationExpiresAt.getTime() < Date.now()
+    ) {
+      this.logger.warn(`Email verification failed (token expired) for ${email}`);
+      throw new UnauthorizedException('Verification token expired');
+    }
+
+    const updated = await this.usersRepo.transaction(async (tx) => {
+      return await tx.user.update({
+        where: { email },
+        data: {
+          isEmailVerified: true,
+          emailVerificationToken: null,
+          emailVerificationExpiresAt: null,
+        },
+      });
+    });
+
+    this.logger.log(`Email verified successfully for ${updated.email}`);
+
+    const payload = {
+      sub: updated.id,
+      email: updated.email,
+      role: updated.role,
+      name: updated.name,
+    };
+
+    const accessToken = await this.jwtService.generateAccessToken(payload);
+    const { token: refreshToken } =
+      await this.jwtService.generateRefreshToken(payload);
+
+    return { accessToken, refreshToken };
   }
 }

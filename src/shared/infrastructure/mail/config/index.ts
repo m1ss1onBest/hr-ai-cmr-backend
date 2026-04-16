@@ -50,6 +50,14 @@ export class MailConfig {
     process.env.EMAIL_FORGOT_PASSWORD_URL!;
 
   get isEnabled(): boolean {
+    const isProd = process.env.NODE_ENV === 'production';
+    // In local/dev we keep mail disabled by default to avoid SMTP timeouts.
+    // Enable explicitly by setting MAIL_ENABLED=true.
+    const mailEnabledFlag = (process.env.MAIL_ENABLED ?? '').toLowerCase();
+    const explicitlyEnabled =
+      mailEnabledFlag === 'true' || mailEnabledFlag === '1';
+
+    if (!isProd && !explicitlyEnabled) return false;
     return !!this.SMTP_HOST;
   }
 }

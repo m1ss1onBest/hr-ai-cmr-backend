@@ -18,13 +18,17 @@ export class StorageConfig {
   public readonly STORAGE_USE_SSL: boolean =
     process.env.STORAGE_USE_SSL! === 'true';
 
+  // WIP come up with some smart ass way of injecting storage instance
+  // e.g. switching from MinIO to S3
   @IsString()
   @IsNotEmpty()
-  public readonly STORAGE_ACCESS_KEY: string = process.env.STORAGE_ACCESS_KEY!;
+  public readonly MINIO_ROOT_USER: string = process.env.MINIO_ROOT_USER!;
 
+  // WIP read previous comment
   @IsString()
   @IsNotEmpty()
-  public readonly STORAGE_SECRET_KEY: string = process.env.STORAGE_SECRET_KEY!;
+  public readonly MINIO_ROOT_PASSWORD: string =
+    process.env.MINIO_ROOT_PASSWORD!;
 
   @IsString()
   @IsNotEmpty()
