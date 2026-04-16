@@ -180,12 +180,24 @@ export class AuthControllerV1 {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(
-    @Body() dto: VerifyEmailRequest,
+    @Body() dto: Partial<VerifyEmailRequest>,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ): Promise<VerifyEmailResponse> {
+    // Support verification link params: /verify-email?token=...&email=...
+    const q = req.query as Record<string, unknown>;
+    const email =
+      (typeof dto?.email === 'string' && dto.email) ||
+      (typeof q.email === 'string' && q.email) ||
+      '';
+    const token =
+      (typeof dto?.token === 'string' && dto.token) ||
+      (typeof q.token === 'string' && q.token) ||
+      '';
+
     const { accessToken, refreshToken } = await this.authService.verifyEmail(
-      dto.email,
-      dto.token,
+      email,
+      token,
     );
 
     setAuthCookies(res, this.authConfig, accessToken, refreshToken);

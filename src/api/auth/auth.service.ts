@@ -33,22 +33,46 @@ export class AuthService {
     user: AuthUserResponse;
   }> {
     try {
-      // 1) Create user + tokens inside a transaction
+      this.logger.log(`Register attempt: ${dto.email}`);
+      // 1) Create user or re-send verification token inside a transaction
       const result = await this.usersRepo.transaction(async (tx) => {
         const existing = await tx.user.findUnique({
           where: { email: dto.email },
         });
-        if (existing) {
-          throw new ConflictException('Email already taken');
-        }
-
-        const passwordHash = await bcrypt.hash(dto.password, 10);
 
         const token = Array.from({ length: 32 }, () =>
           Math.floor(Math.random() * 16).toString(16),
         ).join('');
         const now = new Date();
         const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 min
+
+        if (existing) {
+          // If user exists but isn't verified yet, rotate token and re-send email.
+          if (!existing.isEmailVerified) {
+            this.logger.log(
+              `Register called for unverified email. Re-issuing verification token: ${dto.email}`,
+            );
+
+            const updated = await tx.user.update({
+              where: { email: dto.email },
+              data: {
+                // Optionally allow changing name on repeated register
+                name: dto.name ?? existing.name,
+                emailVerificationToken: token,
+                emailVerificationExpiresAt: expiresAt,
+              },
+            });
+
+            const safeUser = (({ password, ...rest }) => rest)(updated);
+            return { accessToken: '', refreshToken: '', user: safeUser };
+          }
+
+          // Verified user -> real conflict
+          this.logger.warn(`Register failed: email already taken (${dto.email})`);
+          throw new ConflictException('Email already taken');
+        }
+
+        const passwordHash = await bcrypt.hash(dto.password, 10);
 
         const user = await tx.user.create({
           data: {
@@ -62,12 +86,9 @@ export class AuthService {
           },
         });
 
-        const accessToken = '';
-        const refreshToken = '';
-
         const safeUser = (({ password, ...rest }) => rest)(user);
 
-        return { accessToken, refreshToken, user: safeUser };
+        return { accessToken: '', refreshToken: '', user: safeUser };
       });
 
       const fresh = await this.usersRepo.findOneByEmail(result.user.email);
@@ -107,13 +128,16 @@ export class AuthService {
     refreshToken: string;
     user: AuthUserResponse;
   }> {
+    this.logger.log(`Login attempt: ${dto.email}`);
     const user: User | null = await this.usersRepo.findOneByEmail(dto.email);
     if (!user) {
+      this.logger.warn(`Login failed: user not found (${dto.email})`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const ok = await bcrypt.compare(dto.password, user.password);
     if (!ok) {
+      this.logger.warn(`Login failed: invalid password (${dto.email})`);
       throw new UnauthorizedException('Invalid credentials');
     }
 

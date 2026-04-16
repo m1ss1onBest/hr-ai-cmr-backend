@@ -12,7 +12,18 @@ export class MailService implements IMailService {
 
   async sendVerifyEmail(email: string, token: string): Promise<void> {
     // If SMTP isn't configured, don't block flows like registration in local/dev.
-    if (!this.mailConfig.isEnabled) return;
+    if (!this.mailConfig.isEnabled) {
+      // In local/dev SMTP is often disabled. Print the link so it can be tested manually.
+      const base =
+        (process.env.EMAIL_VERIFICATION_URL as string | undefined) ??
+        (this.mailConfig as any).EMAIL_VERIFICATION_URL;
+      const verifyUrl = base
+        ? `${base}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
+        : `token=${token} email=${email}`;
+      // eslint-disable-next-line no-console
+      console.log(`[MailService] Mail disabled. Verification link: ${verifyUrl}`);
+      return;
+    }
 
     const link = this.mailConfig.EMAIL_VERIFICATION_URL;
     const verifyUrl = `${link}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
