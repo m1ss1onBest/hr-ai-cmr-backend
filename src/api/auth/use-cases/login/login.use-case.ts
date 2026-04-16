@@ -30,6 +30,10 @@ export class LoginUseCase implements ILoginUseCase {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedException('Email is not verified');
+    }
+
     const accessToken = await this.jwtService.generateAccessToken({
       sub: user.id,
       email: user.email,

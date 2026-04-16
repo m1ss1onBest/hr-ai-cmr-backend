@@ -44,37 +44,42 @@ export class AuthService {
 
         const passwordHash = await bcrypt.hash(dto.password, 10);
 
+        const token = Array.from({ length: 32 }, () =>
+          Math.floor(Math.random() * 16).toString(16),
+        ).join('');
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 min
+
         const user = await tx.user.create({
           data: {
             email: dto.email,
             name: dto.name,
             password: passwordHash,
             role: UserRole.HR,
+            isEmailVerified: false,
+            emailVerificationToken: token,
+            emailVerificationExpiresAt: expiresAt,
           },
         });
 
-        const payload = {
-          sub: user.id,
-          email: user.email,
-          role: user.role,
-          name: user.name,
-        };
+        const accessToken = '';
+        const refreshToken = '';
 
-        const accessToken = await this.jwtService.generateAccessToken(payload);
-        const { token: refreshToken } =
-          await this.jwtService.generateRefreshToken(payload);
-
-        // omit password explicitly to avoid unused-var lint issues
         const safeUser = (({ password, ...rest }) => rest)(user);
 
         return { accessToken, refreshToken, user: safeUser };
       });
 
+      const fresh = await this.usersRepo.findOneByEmail(result.user.email);
+      this.logger.log(`Verification token generated for ${result.user.email}`);
+
       // 2) Side effects *after* transaction.
-      // In production we keep it strict (fail if mail can't be sent).
-      // In local/dev we don't block registration due to SMTP/network issues.
+
       try {
-        await this.mailService.sendVerifyEmail(result.user.email);
+        await this.mailService.sendVerifyEmail(
+          result.user.email,
+          fresh?.emailVerificationToken ?? '',
+        );
       } catch (e: unknown) {
         const isProd = process.env.NODE_ENV === 'production';
         this.logger.error('Verify email send failed', e as any);
@@ -110,6 +115,11 @@ export class AuthService {
     const ok = await bcrypt.compare(dto.password, user.password);
     if (!ok) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.isEmailVerified) {
+      this.logger.warn(`Login blocked: email not verified (${user.email})`);
+      throw new UnauthorizedException('Email is not verified');
     }
 
     const payload = {
@@ -162,5 +172,67 @@ export class AuthService {
     if (!payload) return;
 
     this.refreshStore.revoke(payload.jti);
+  }
+
+  async verifyEmail(
+    email: string,
+    token: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const user = await this.usersRepo.findOneByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid verification data');
+    }
+
+    if (user.isEmailVerified) {
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+      };
+      const accessToken = await this.jwtService.generateAccessToken(payload);
+      const { token: refreshToken } =
+        await this.jwtService.generateRefreshToken(payload);
+      return { accessToken, refreshToken };
+    }
+
+    if (!user.emailVerificationToken || user.emailVerificationToken !== token) {
+      this.logger.warn(`Email verification failed (invalid token) for ${email}`);
+      throw new UnauthorizedException('Invalid verification token');
+    }
+
+    if (
+      user.emailVerificationExpiresAt &&
+      user.emailVerificationExpiresAt.getTime() < Date.now()
+    ) {
+      this.logger.warn(`Email verification failed (token expired) for ${email}`);
+      throw new UnauthorizedException('Verification token expired');
+    }
+
+    const updated = await this.usersRepo.transaction(async (tx) => {
+      return await tx.user.update({
+        where: { email },
+        data: {
+          isEmailVerified: true,
+          emailVerificationToken: null,
+          emailVerificationExpiresAt: null,
+        },
+      });
+    });
+
+    this.logger.log(`Email verified successfully for ${updated.email}`);
+
+    const payload = {
+      sub: updated.id,
+      email: updated.email,
+      role: updated.role,
+      name: updated.name,
+    };
+
+    const accessToken = await this.jwtService.generateAccessToken(payload);
+    const { token: refreshToken } =
+      await this.jwtService.generateRefreshToken(payload);
+
+    return { accessToken, refreshToken };
   }
 }

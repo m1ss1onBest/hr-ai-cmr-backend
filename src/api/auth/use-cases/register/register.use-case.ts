@@ -28,13 +28,22 @@ export class RegisterUseCase implements IRegisterUseCase {
 
     const passwordHash = await bcrypt.hash(request.password, 10);
 
+    const token = Array.from({ length: 32 }, () =>
+      Math.floor(Math.random() * 16).toString(16),
+    ).join('');
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 15 * 60 * 1000);
+
     const user = await this.usersRepo.create({
       email: request.email,
       name: request.name,
       password: passwordHash,
-    });
+      isEmailVerified: false,
+      emailVerificationToken: token,
+      emailVerificationExpiresAt: expiresAt,
+    } as any);
 
-    await this.mailService.sendVerifyEmail(user.email);
+    await this.mailService.sendVerifyEmail(user.email, token);
 
     this.event.log('User registered successfully');
     return new User(user).safe();
