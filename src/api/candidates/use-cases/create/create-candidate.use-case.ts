@@ -10,12 +10,9 @@ import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-log
 
 @Injectable()
 export class CreateCandidateUseCase implements ICreateCandidateUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly candidatesRepo: CandidatesRepository,
-  ) {
-    logger.setContext(CreateCandidateUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(CreateCandidateUseCase.name);
+
+  constructor(private readonly candidatesRepo: CandidatesRepository) {}
 
   async run(request: CreateCandidateRequest): Promise<CreateCandidateResponse> {
     try {
@@ -27,9 +24,9 @@ export class CreateCandidateUseCase implements ICreateCandidateUseCase {
       return new Candidate(candidate);
     } catch (err) {
       if (err instanceof ConflictException) {
-        this.logger.conflict(err.message, err);
+        throw this.logger.conflict(err.message, err);
       }
-      this.logger.badRequest('Failed to create candidate', err);
+      throw this.logger.badRequest('Failed to create candidate', err);
     }
   }
 }

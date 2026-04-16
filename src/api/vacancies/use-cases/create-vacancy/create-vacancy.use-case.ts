@@ -7,12 +7,9 @@ import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-log
 
 @Injectable()
 export class CreateVacancyUseCase implements ICreateVacancyUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly vacanciesRepo: VacanciesRepository,
-  ) {
-    logger.setContext(CreateVacancyUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(CreateVacancyUseCase.name);
+
+  constructor(private readonly vacanciesRepo: VacanciesRepository) {}
 
   async run(
     request: CreateVacancyRequest & { createdById: string },
@@ -33,7 +30,7 @@ export class CreateVacancyUseCase implements ICreateVacancyUseCase {
 
       return new Vacancy(vacancy) as CreateVacancyResponse;
     } catch (err) {
-      this.logger.badRequest('Failed to create vacancy', err);
+      throw this.logger.badRequest('Failed to create vacancy', err);
     }
   }
 }

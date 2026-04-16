@@ -5,4 +5,9 @@ export abstract class IAiProvider {
     prompt: string,
     systemPrompt: string,
   ): Promise<T>;
+
+  //abstract analuzeStructuredFile<T>(
+  //  fileUrl: string,
+  //  systemPromt: string,
+  //): Promise<T>;
 }

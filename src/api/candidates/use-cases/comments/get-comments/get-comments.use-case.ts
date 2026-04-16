@@ -6,13 +6,12 @@ import { CandidateCommentResponse } from '../../../dto/comments.dto';
 
 @Injectable()
 export class GetCommentsUseCase {
+  private readonly logger = new EventHandlerLogger(GetCommentsUseCase.name);
+
   constructor(
-    private readonly logger: EventHandlerLogger,
     private readonly commentsRepo: CommentsRepository,
     private readonly candidatesRepo: CandidatesRepository,
-  ) {
-    logger.setContext(GetCommentsUseCase.name);
-  }
+  ) {}
 
   async run(request: {
     candidateId: string;
@@ -28,7 +27,7 @@ export class GetCommentsUseCase {
       );
       return comments as unknown as CandidateCommentResponse[];
     } catch (err) {
-      this.logger.badRequest('Failed to get candidate comments', err);
+      throw this.logger.badRequest('Failed to get candidate comments', err);
     }
   }
 }

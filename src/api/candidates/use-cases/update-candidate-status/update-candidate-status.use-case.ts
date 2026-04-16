@@ -18,12 +18,11 @@ const STATUS_INPUT_TO_ENUM: Record<string, CandidateStatus> = {
 
 @Injectable()
 export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly candidatesRepo: CandidatesRepository,
-  ) {
-    logger.setContext(UpdateCandidateStatusUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(
+    UpdateCandidateStatusUseCase.name,
+  );
+
+  constructor(private readonly candidatesRepo: CandidatesRepository) {}
 
   async run(request: {
     id: string;
@@ -35,7 +34,7 @@ export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCa
       const statusEnum = STATUS_INPUT_TO_ENUM[normalized];
 
       if (!statusEnum) {
-        this.logger.badRequest(
+        throw this.logger.badRequest(
           `Invalid status. Allowed: ${Object.keys(STATUS_INPUT_TO_ENUM).join(', ')}`,
         );
       }
@@ -53,7 +52,7 @@ export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCa
       // currentStatus isn't present in generated prisma types yet; attach it to response.
       return new Candidate({ ...updated, currentStatus: statusEnum });
     } catch (err) {
-      this.logger.badRequest('Failed to update candidate status', err);
+      throw this.logger.badRequest('Failed to update candidate status', err);
     }
   }
 }

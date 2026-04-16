@@ -108,7 +108,7 @@ export class VacanciesControllerV1 {
     @Param('id') id: string,
     @Body() dto: UpdateVacancyRequest,
   ): Promise<UpdateVacancyResponse> {
-    return await this.updateVacancy.run({ id, ...dto });
+    return await this.updateVacancy.run({ ...dto, id });
   }
 
   @Delete(':id')

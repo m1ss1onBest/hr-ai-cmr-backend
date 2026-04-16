@@ -26,7 +26,6 @@ export class VacanciesRepository extends IBaseUserRepository {
   async softDelete(id: string): Promise<Vacancy> {
     const existing = await this.findOneById(id);
     if (!existing) throw new NotFoundException('Vacancy not found');
-
     return await this.prisma.vacancy.update({
       where: { id },
       data: { deletedAt: new Date() },

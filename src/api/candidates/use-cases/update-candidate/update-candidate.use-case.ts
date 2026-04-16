@@ -6,12 +6,9 @@ import { IUpdateCandidateUseCase } from './update-candidate.interface';
 
 @Injectable()
 export class UpdateCandidateUseCase implements IUpdateCandidateUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly candidatesRepo: CandidatesRepository,
-  ) {
-    logger.setContext(UpdateCandidateUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(UpdateCandidateUseCase.name);
+
+  constructor(private readonly candidatesRepo: CandidatesRepository) {}
 
   async run(request: {
     id: string;
@@ -30,7 +27,7 @@ export class UpdateCandidateUseCase implements IUpdateCandidateUseCase {
       this.logger.log(`Candidate updated | id=${updated.id}`);
       return new Candidate(updated);
     } catch (err) {
-      this.logger.badRequest('Failed to update candidate', err);
+      throw this.logger.badRequest('Failed to update candidate', err);
     }
   }
 }

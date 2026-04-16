@@ -11,14 +11,13 @@ import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-log
 
 @Injectable()
 export class AnalyzeResumeUseCase implements IAnalyzeResumeUseCase {
+  private readonly logger = new EventHandlerLogger(AnalyzeResumeUseCase.name);
+
   constructor(
-    private readonly logger: EventHandlerLogger,
     private readonly aiService: AiService,
     private readonly resumeAnalysisRepo: ResumeAnalysisRepository,
     private readonly candidatesRepo: CandidatesRepository,
-  ) {
-    logger.setContext(AnalyzeResumeUseCase.name);
-  }
+  ) {}
 
   async run(
     request: AnalyzeResumeRequest & { candidateId: string },

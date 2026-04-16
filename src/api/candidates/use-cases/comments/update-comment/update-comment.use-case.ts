@@ -5,12 +5,9 @@ import { CandidateCommentResponse } from '../../../dto/comments.dto';
 
 @Injectable()
 export class UpdateCommentUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly commentsRepo: CommentsRepository,
-  ) {
-    logger.setContext(UpdateCommentUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(UpdateCommentUseCase.name);
+
+  constructor(private readonly commentsRepo: CommentsRepository) {}
 
   async run(request: {
     candidateId: string;
@@ -35,7 +32,7 @@ export class UpdateCommentUseCase {
       this.logger.log(`Comment updated | id=${updated.id}`);
       return full as unknown as CandidateCommentResponse;
     } catch (err) {
-      this.logger.badRequest('Failed to update candidate comment', err);
+      throw this.logger.badRequest('Failed to update candidate comment', err);
     }
   }
 }

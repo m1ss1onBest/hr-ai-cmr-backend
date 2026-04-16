@@ -5,12 +5,9 @@ import { IDeleteCommentUseCase } from './delete-comment.interface';
 
 @Injectable()
 export class DeleteCommentUseCase implements IDeleteCommentUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly commentsRepo: CommentsRepository,
-  ) {
-    logger.setContext(DeleteCommentUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(DeleteCommentUseCase.name);
+
+  constructor(private readonly commentsRepo: CommentsRepository) {}
 
   async run(request: {
     candidateId: string;

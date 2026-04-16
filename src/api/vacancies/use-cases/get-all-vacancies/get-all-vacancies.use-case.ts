@@ -7,19 +7,16 @@ import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-log
 
 @Injectable()
 export class GetAllVacanciesUseCase implements IGetAllVacanciesUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly vacanciesRepo: VacanciesRepository,
-  ) {
-    logger.setContext(GetAllVacanciesUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(GetAllVacanciesUseCase.name);
+
+  constructor(private readonly vacanciesRepo: VacanciesRepository) {}
 
   async run(): Promise<VacancyBaseResponse[]> {
     try {
       const vacancies = await this.vacanciesRepo.findAll();
       return vacancies.map((v) => new Vacancy(v) as VacancyBaseResponse);
     } catch (err) {
-      this.logger.internal('Failed to fetch vacancies', err);
+      throw this.logger.internal('Failed to fetch vacancies', err);
     }
   }
 }

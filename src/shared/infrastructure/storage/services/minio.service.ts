@@ -23,8 +23,8 @@ export class MinioService implements OnModuleInit, IStorageService {
     this.bucket = this.config.STORAGE_BUCKET;
   }
 
-  async uploadFile(objectName: string, buffer: Buffer) {
-    return await this.client.putObject(this.bucket, objectName, buffer);
+  async uploadFile(objectName: string, buffer: Buffer): Promise<void> {
+    await this.client.putObject(this.bucket, objectName, buffer);
   }
 
   async downloadFile(objectName: string): Promise<Readable> {

@@ -9,13 +9,12 @@ import {
 
 @Injectable()
 export class UploadResumeUseCase implements IUploadResumeUseCase {
+  private readonly logger = new EventHandlerLogger(UploadResumeUseCase.name);
+
   constructor(
-    private readonly logger: EventHandlerLogger,
     private readonly candidatesRepo: CandidatesRepository,
     private readonly storage: IFileStorage,
-  ) {
-    logger.setContext(UploadResumeUseCase.name);
-  }
+  ) {}
 
   async run(params: UploadResumeRequest): Promise<{ cvUrl: string }> {
     const candidate = await this.candidatesRepo.findOneById(params.candidateId);
