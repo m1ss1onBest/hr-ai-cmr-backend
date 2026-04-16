@@ -6,12 +6,9 @@ import { IDeleteCandidateUseCase } from './delete-candidate.interface';
 
 @Injectable()
 export class DeleteCandidateUseCase implements IDeleteCandidateUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly candidatesRepo: CandidatesRepository,
-  ) {
-    logger.setContext(DeleteCandidateUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(DeleteCandidateUseCase.name);
+
+  constructor(private readonly candidatesRepo: CandidatesRepository) {}
 
   async run(request: { id: string }): Promise<Candidate> {
     try {
@@ -19,7 +16,7 @@ export class DeleteCandidateUseCase implements IDeleteCandidateUseCase {
       this.logger.log(`Candidate soft-deleted | id=${deleted.id}`);
       return new Candidate(deleted);
     } catch (err) {
-      this.logger.badRequest('Failed to delete candidate', err);
+      throw this.logger.badRequest('Failed to delete candidate', err);
     }
   }
 }

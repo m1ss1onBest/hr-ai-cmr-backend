@@ -11,14 +11,13 @@ import { TokensSerivce } from 'src/shared/infrastructure/crypto/tokens.service';
 
 @Injectable()
 export class SetPasswordUseCase implements ISetPasswordUseCase {
+  private readonly logger = new EventHandlerLogger(SetPasswordUseCase.name);
+
   constructor(
-    private readonly event: EventHandlerLogger,
     private readonly usersRepository: UsersRepository,
     private readonly redisService: RedisService,
     private readonly tokensService: TokensSerivce,
-  ) {
-    this.event.setContext(SetPasswordUseCase.name);
-  }
+  ) {}
 
   async run(request: SetPasswordRequest): Promise<SetPasswordResponse> {
     const hash = this.tokensService.hash(request.token);
@@ -26,7 +25,7 @@ export class SetPasswordUseCase implements ISetPasswordUseCase {
     const user = await this.usersRepository.findOneById(userId!);
 
     if (!user) {
-      this.event.badRequest(
+      throw this.logger.badRequest(
         `Cannot set password for user. Invalid reset token`,
       );
     }
@@ -37,12 +36,12 @@ export class SetPasswordUseCase implements ISetPasswordUseCase {
       );
       await this.usersRepository.updatePassword(user.id, newPass);
       const msg = `User ${user.id} password has been successfully updated`;
-      this.event.log(msg);
+      this.logger.log(msg);
       return {
         message: msg,
       };
     } catch (err) {
-      this.event.internal(`Failed to update user passsword`, err);
+      throw this.logger.internal(`Failed to update user passsword`, err);
     }
   }
 }

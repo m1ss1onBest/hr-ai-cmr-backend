@@ -7,20 +7,20 @@ import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-log
 
 @Injectable()
 export class DeleteVacancyUseCase implements IDeleteVacancyUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly vacanciesRepo: VacanciesRepository,
-  ) {
-    logger.setContext(DeleteVacancyUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(DeleteVacancyUseCase.name);
+
+  constructor(private readonly vacanciesRepo: VacanciesRepository) {}
 
   async run(request: { id: string }): Promise<VacancyBaseResponse> {
     try {
       const deleted = await this.vacanciesRepo.softDelete(request.id);
+      if (!deleted) {
+        this.logger.notFound('Vacancy not found', { id: request.id });
+      }
       this.logger.log(`Vacancy soft-deleted | id=${deleted.id}`);
       return new Vacancy(deleted) as VacancyBaseResponse;
     } catch (err) {
-      this.logger.badRequest('Failed to delete vacancy', err);
+      return this.logger.badRequest('Failed to delete vacancy', err);
     }
   }
 }

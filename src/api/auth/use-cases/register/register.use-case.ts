@@ -12,18 +12,17 @@ import { MailService } from 'src/shared/infrastructure/mail/mail.service';
 
 @Injectable()
 export class RegisterUseCase implements IRegisterUseCase {
+  private readonly logger = new EventHandlerLogger(RegisterUseCase.name);
+
   constructor(
     private readonly usersRepo: UsersRepository,
-    private readonly event: EventHandlerLogger,
     private readonly mailService: MailService,
-  ) {
-    this.event.setContext(RegisterUseCase.name);
-  }
+  ) {}
 
   async run(request: RegisterUserRequest): Promise<RegisterUserResponse> {
     const userRequestRes = await this.usersRepo.findOneByEmail(request.email);
     if (userRequestRes) {
-      this.event.conflict('Email already taken');
+      this.logger.conflict('Email already taken');
     }
 
     const passwordHash = await bcrypt.hash(request.password, 10);
@@ -36,7 +35,7 @@ export class RegisterUseCase implements IRegisterUseCase {
 
     await this.mailService.sendVerifyEmail(user.email);
 
-    this.event.log('User registered successfully');
+    this.logger.log('User registered successfully');
     return new User(user).safe();
   }
 }

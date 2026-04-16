@@ -11,21 +11,22 @@ import ms from 'ms';
 
 @Injectable()
 export class ForgotPasswordRequestUseCase implements IForgotPasswordRequestUseCase {
+  private readonly logger = new EventHandlerLogger(
+    ForgotPasswordRequestUseCase.name,
+  );
+
   constructor(
     private readonly redisService: RedisService,
     private readonly tokensService: TokensService,
     private readonly mailService: MailService,
     private readonly usersRepository: UsersRepository,
     private readonly config: AuthConfig,
-    private readonly event: EventHandlerLogger,
-  ) {
-    this.event.setContext(ForgotPasswordRequestUseCase.name);
-  }
+  ) {}
 
   async run(email: string): Promise<ForgotPasswordRequestResponse> {
     const user = await this.usersRepository.findOneByEmail(email);
     if (!user) {
-      this.event.notFound(
+      this.logger.notFound(
         `Failed to reset password. User with ${email} email does not exist`,
       );
     }
@@ -37,24 +38,24 @@ export class ForgotPasswordRequestUseCase implements IForgotPasswordRequestUseCa
 
     await this.redisService.setValue(
       `reset:${resetPasswordToken.hash}`,
-      user.id,
+      user!.id,
       expirationSecs,
     );
 
     try {
       await this.mailService.sendForgotPassword(
-        user.email,
+        user!.email,
         resetPasswordToken.value,
       );
     } catch (err) {
-      this.event.badRequest(
-        `Failed to send email to ${user.email}. Make sure this email is correct`,
+      this.logger.badRequest(
+        `Failed to send email to ${user!.email}. Make sure this email is correct`,
         err,
       );
     }
 
-    const msg = `Password reset request was successfully sent to ${user.email}`;
-    this.event.log(msg);
+    const msg = `Password reset request was successfully sent to ${user!.email}`;
+    this.logger.log(msg);
     return { message: msg };
   }
 }

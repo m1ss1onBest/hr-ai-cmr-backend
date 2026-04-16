@@ -7,18 +7,15 @@ import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-log
 
 @Injectable()
 export class GetVacancyUseCase implements IGetVacancyUseCase {
-  constructor(
-    private readonly logger: EventHandlerLogger,
-    private readonly vacanciesRepo: VacanciesRepository,
-  ) {
-    logger.setContext(GetVacancyUseCase.name);
-  }
+  private readonly logger = new EventHandlerLogger(GetVacancyUseCase.name);
+
+  constructor(private readonly vacanciesRepo: VacanciesRepository) {}
 
   async run(id: string): Promise<VacancyBaseResponse> {
     const vacancy = await this.vacanciesRepo.findOneById(id);
 
     if (!vacancy) {
-      this.logger.notFound(`Vacancy not found | id=${id}`);
+      throw this.logger.notFound(`Vacancy not found | id=${id}`);
     }
 
     return new Vacancy(vacancy) as VacancyBaseResponse;

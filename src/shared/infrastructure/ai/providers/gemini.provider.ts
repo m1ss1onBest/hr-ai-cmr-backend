@@ -72,6 +72,18 @@ export class GeminiProvider extends IAiProvider {
     }
   }
 
+  // async analuzeStructuredFiles(
+  // fileUrl: string,
+  // systemPrompt: string,
+  //: Promise<T> {
+  // try {
+  //   const response = await this.client.models.generateContent({
+  //     model: this.config.model,
+  //
+  //   })
+  // }
+  // }
+
   private handleAiError(error: unknown): never {
     if (error && typeof error === 'object' && 'getStatus' in error) {
       throw error as unknown as Error;

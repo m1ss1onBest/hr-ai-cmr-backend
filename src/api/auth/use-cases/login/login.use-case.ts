@@ -9,13 +9,12 @@ import { IJwtTokensService } from '../../modules/jwt/jwt.interface';
 
 @Injectable()
 export class LoginUseCase implements ILoginUseCase {
+  private readonly logger = new EventHandlerLogger(LoginUseCase.name);
+
   constructor(
     private readonly usersRepo: UsersRepository,
-    private readonly event: EventHandlerLogger,
     private readonly jwtService: IJwtTokensService,
-  ) {
-    this.event.setContext(LoginUseCase.name);
-  }
+  ) {}
 
   async run(request: LoginUserRequest): Promise<LoginUserResponse> {
     const user = await this.usersRepo.findOneByEmail(request.email);
@@ -35,7 +34,7 @@ export class LoginUseCase implements ILoginUseCase {
       email: user.email,
     });
 
-    this.event.log('User logged in successfully');
+    this.logger.log('User logged in successfully');
     return {
       user: new User(user).safe(),
       accessToken,

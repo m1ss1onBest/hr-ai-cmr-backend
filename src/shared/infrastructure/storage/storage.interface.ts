@@ -1,6 +1,6 @@
-import { Readable } from "stream";
+import { Readable } from 'stream';
 
 export abstract class IStorageService {
-  abstract uploadFile(objectName: string, buffer: Buffer);
+  abstract uploadFile(objectName: string, buffer: Buffer): Promise<void>;
   abstract downloadFile(objectName: string): Promise<Readable>;
 }
