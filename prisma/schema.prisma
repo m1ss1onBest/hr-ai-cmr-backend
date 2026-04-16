@@ -8,14 +8,20 @@ datasource db {
 }
 
 model User {
-  id              String          @id @default(uuid())
-  email           String          @unique @db.VarChar(255)
-  password        String
-  role            UserRole        @default(HR)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @default(now()) @updatedAt
-  deletedAt       DateTime?
-  name            String          @db.VarChar(255)
+  id        String    @id @default(uuid())
+  email     String    @unique @db.VarChar(255)
+  password  String
+  role      UserRole  @default(HR)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime?
+  name      String    @db.VarChar(255)
+
+  // Email verification
+  isEmailVerified            Boolean   @default(false)
+  emailVerificationToken     String?   @db.VarChar(64)
+  emailVerificationExpiresAt DateTime?
+
   statusHistories StatusHistory[]
   vacancies       Vacancy[]
   comments        Comment[]
@@ -100,12 +106,12 @@ model Position {
 model ResumeAnalysis {
   id                String    @id @default(uuid())
   candidateId       String
-  skills            Json      // string[]
+  skills            Json // string[]
   level             String?   @db.VarChar(50) // Junior | Middle | Senior | null
   yearsOfExperience Int?
-  technologies      Json      // string[]
-  softSkills        Json?     // string[] | null
-  score             Int       // 1-10
+  technologies      Json // string[]
+  softSkills        Json? // string[] | null
+  score             Int // 1-10
   summary           String
   analyzedAt        DateTime  @default(now())
   candidate         Candidate @relation(fields: [candidateId], references: [id])
