@@ -102,7 +102,7 @@ export class AuthService {
           fresh?.emailVerificationToken ?? '',
         );
       } catch (e: unknown) {
-        const isProd = process.env.NODE_ENV === 'production';
+        const isProd = process.env.MAIL_ENABLED === 'production';
         this.logger.error('Verify email send failed', e as any);
 
         if (isProd) {
