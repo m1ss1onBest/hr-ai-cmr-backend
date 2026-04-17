@@ -45,6 +45,7 @@ export class MinioService implements OnModuleInit, IStorageService {
 
         if (!exists) {
           await this.client.makeBucket(bucketName);
+          this.logger.log(
             `Storage bucket \`${bucketName}\` created successfully`,
           );
         }
