@@ -120,10 +120,10 @@ export class CandidatesRepository extends IBaseRepository {
     searchQuery: SearchCandidatesQuery,
   ): Promise<PaginatedResponse<CandidateModel>> {
     const page = searchQuery.page ?? 1;
-    const limit = searchQuery.limit ?? searchQuery.limit ?? 20;
+    const limit = searchQuery.limit ?? 20;
 
     const sortBy = searchQuery.sortBy ?? 'createdAt';
-    const order = searchQuery.order ?? searchQuery.limit ?? 'desc';
+    const order = searchQuery.order ?? 'desc';
 
     const where: Prisma.CandidateWhereInput = {
       deletedAt: null,
