@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
+  private readonly logger: Logger = new Logger(RedisService.name);
   constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
 
   async setValue(key: string, value: string, expiration?: number) {
