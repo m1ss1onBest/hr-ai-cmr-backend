@@ -10,6 +10,7 @@ export const REDIS_MODULE_PROVIDERS = [
 ];
 
 @Module({
+  imports: [],
   exports: [...REDIS_MODULE_PROVIDERS],
   providers: [...REDIS_MODULE_PROVIDERS],
 })
