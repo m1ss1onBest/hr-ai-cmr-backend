@@ -1,9 +1,15 @@
-import {   Test, TestingModule } from '@nestjs/testing';
-import {   INestApplication, ValidationPipe, VersioningType, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/shared/infrastructure/database/prisma.service';
-import { JwtAuthGuard } from '../src/api/auth/modules/guards/jwt-auth.guard'; 
+import { JwtAuthGuard } from '../src/api/auth/modules/guards/jwt-auth.guard';
 
 describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   let app: INestApplication;
@@ -12,13 +18,17 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   beforeEach(async () => {
     const prismaMock = {
       user: { findUnique: jest.fn(), create: jest.fn() },
-      candidate: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) }
+      candidate: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
+      },
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(PrismaService).useValue(prismaMock)
+      .overrideProvider(PrismaService)
+      .useValue(prismaMock)
       .overrideGuard(JwtAuthGuard)
       .useValue({
         canActivate: (context: ExecutionContext) => {
@@ -43,15 +53,26 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   });
 
   it('POST /api/v1/auth/register -> 409 Conflict if email exists (KAN-146)', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 'uuid', email: 'denys@stfalcon.com' });
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'uuid',
+      email: 'denys@stfalcon.com',
+    });
     return request(app.getHttpServer())
       .post('/api/v1/auth/register')
-      .send({ email: 'denys@stfalcon.com', password: 'Password123!', name: 'Denys' })
-      .expect(409); 
+      .send({
+        email: 'denys@stfalcon.com',
+        password: 'Password123!',
+        name: 'Denys',
+      })
+      .expect(409);
   });
 
   it('POST /api/v1/auth/login -> 401 Unauthorized on wrong password (KAN-149)', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: '1', email: 'denys@stfalcon.com', password: 'hash' });
+    prisma.user.findUnique.mockResolvedValue({
+      id: '1',
+      email: 'denys@stfalcon.com',
+      password: 'hash',
+    });
     return request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({ email: 'denys@stfalcon.com', password: 'WrongPassword123!' })
@@ -59,9 +80,7 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   });
 
   it('GET /api/v1/candidates -> 401 Unauthorized without JWT (KAN-147)', async () => {
-    return request(app.getHttpServer())
-      .get('/api/v1/candidates') 
-      .expect(401); 
+    return request(app.getHttpServer()).get('/api/v1/candidates').expect(401);
   });
 
   afterAll(async () => {
