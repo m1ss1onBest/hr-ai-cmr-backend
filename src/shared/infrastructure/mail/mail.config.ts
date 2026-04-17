@@ -5,7 +5,7 @@ import {
   IsUrl,
   ValidateIf,
 } from 'class-validator';
-import { Config } from '../../config';
+import { Config } from '../config';
 
 @Config()
 export class MailConfig {
