@@ -13,11 +13,16 @@ export class MailService implements IMailService, OnModuleInit {
   ) {}
 
   onModuleInit() {
+    const l = () => {
+      this.logger.log('Mail module loaded successfully');
+    };
     if (!this.mailConfig.isEnabled) {
+      l();
       this.logger.warn(`Mail disabled.`);
       return;
     }
 
+    l();
     this.logger.log(`Mail enabled`);
   }
 
