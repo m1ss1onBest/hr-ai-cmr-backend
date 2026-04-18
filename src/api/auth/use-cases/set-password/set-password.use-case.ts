@@ -21,11 +21,20 @@ export class SetPasswordUseCase implements ISetPasswordUseCase {
 
   async run(request: SetPasswordRequest): Promise<SetPasswordResponse> {
     const hash = this.tokensService.hash(request.token);
-    const userId = await this.redisService.getValue(`reset:${hash}`);
-    const user = await this.usersRepository.findOneById(userId!);
+    const userId = await this.redisService.readValue(`reset:${hash}`);
+
+    if (!userId) {
+      return this.logger.badRequest(
+        `Token ${request.token} is invalid or expired`,
+      );
+    }
+
+    await this.redisService.removeValue(`reset:${hash}`);
+
+    const user = await this.usersRepository.findOneById(userId);
 
     if (!user) {
-      throw this.logger.badRequest(
+      return this.logger.badRequest(
         `Cannot set password for user. Invalid reset token`,
       );
     }
@@ -41,7 +50,7 @@ export class SetPasswordUseCase implements ISetPasswordUseCase {
         message: msg,
       };
     } catch (err) {
-      throw this.logger.internal(`Failed to update user passsword`, err);
+      return this.logger.internal(`Failed to update user passsword`, err);
     }
   }
 }
