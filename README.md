@@ -26,13 +26,13 @@ Make sure you have the following installed:
 npm install
 ```
 
-2. **Generate Prisma client**
+1. **Generate Prisma client**
 
 ```bash
 npx prisma generate
 ```
 
-3. **Configure environment variables**
+1. **Configure environment variables**
 
 ```bash
 cp .env.example .env
@@ -40,7 +40,7 @@ cp .env.example .env
 
 Then edit `.env` file with your database URL and other settings.
 
-4. **Infrastructure**
+1. **Infrastructure**
 
 Since the `docker-compose.dev.yml` was created for local development you can easily set up a Postgres, MinIO, Redis etc...
 
@@ -48,7 +48,7 @@ Since the `docker-compose.dev.yml` was created for local development you can eas
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-5. **Run the project**
+1. **Run the project**
 
 ```bash
 npm run build
@@ -100,20 +100,6 @@ AI_MODEL="gemini-1.5-flash"
 ```
 
 ```bash
-# File uploads (DEPRECATED), use storage instead
-
-# Where resumes are stored when using local storage
-
-UPLOAD_DIR=uploads
-
-# 10MB default
-
-RESUME_MAX_SIZE_BYTES=10485760
-
-# FILE_STORAGE_DRIVER=local
-```
-
-```bash
 # Storage
 
 STORAGE_HOST=localhost
@@ -162,20 +148,39 @@ For more detailed info read official [Prisma Official Documantation](https://www
 
 ## Project architecture
 
+```txt
+                          ┌───────────────────┐                        
+                          │Web / Mobile Client│                        
+                          ├───────────────────┤                        
+                          └───────────────────┘                        
+                                     |                                 
+                                     |                                 
+                               ┌──────────┐                            
+                               │API Server│                            
+                               ├──────────┤                            
+                               └──────────┘                            
+                                     |                                 
+                                     |                                 
+┌──────────┐  ┌──────────────┐   ┌─────┐   ┌──────┐   ┌───────────────┐
+│PostgreSQL│  │Object Storage│   │Redis│   │AI API│   │SMTP / Mail API│
+├──────────┤  ├──────────────┤   ├─────┤   ├──────┤   ├───────────────┤
+└──────────┘  └──────────────┘   └─────┘   └──────┘   └───────────────┘
+```
+
 ### Top level structure `project root`
 
 The project is built on a modular layered architecture (modular monolith + clean-ish architecture) with division into:
 
 - API layer (src/api) — business modules and use cases
 - Shared layer (src/shared) — Core with reused logic and infrastructure layers
-- Infrastructure layer — external services such as: Database, Redis, AI, Storage
+- Infrastructure layer — external services such as: Database, Redis (Valkey), AI, Storage
 - Domain layer — Clear entities and tyeps
 - DevOps & tooling layer — Docker, Prisma, scripts, tests
 
 ```bash
 hr-ai-crm top-level architecture
 ├── docker-compose.dev.yml        # Local development
-├── docker-compose.yml            # Production enviconemnt
+├── docker-compose.yml            # Production environment
 ├── Dockerfile                    # production build container
 ├── prisma                        # ORM level (Prisma)
 ├── scripts                       # Utility scripts
@@ -283,3 +288,36 @@ test/
 ├── candidates.e2e-spec.ts
 └── app.e2e-spec.ts
 ```
+
+## API Documentation
+
+The application provides automatically generated Swagger/OpenAPI documentation.
+Once you start the application, you can access the Swagger UI by navigating to:
+
+**[http://localhost:5000/api/docs](http://localhost:5000/api/docs)**
+
+![Swagger Screenshot](./docs/screenshots/swagger-screenshot.png)
+
+This documentation provides an interactive interface for exploring all available endpoints, parameter requirements, and request/response models.
+
+## Available Scripts
+
+### Building & Running
+
+- `npm run build` - Compiles the project into the `dist` folder
+- `npm run start` - Starts the application
+- `npm run start:dev` - Starts the application in watch mode (auto-reloads on changes)
+- `npm run start:debug` - Starts the application in watch mode with debug enabled
+- `npm run start:prod` - Runs the compiled application (`dist/src/main.js`)
+
+### Testing
+
+- `npm run test` - Runs unit tests
+- `npm run test:watch` - Runs unit tests in watch mode
+- `npm run test:cov` - Runs tests and generates a code coverage report
+- `npm run test:e2e` - Runs end-to-end tests
+
+### Code Formatting & Linting
+
+- `npm run lint` - Lints the codebase using ESLint
+- `npm run format` - Formats the code using Prettier
