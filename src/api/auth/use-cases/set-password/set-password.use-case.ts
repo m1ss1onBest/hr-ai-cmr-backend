@@ -41,7 +41,7 @@ export class SetPasswordUseCase implements ISetPasswordUseCase {
 
     try {
       const newPass = await this.tokensService.hashPassword(
-        request.newPassword,
+        request.password,
       );
       await this.usersRepository.updatePassword(user.id, newPass);
       const msg = `User ${user.id} password has been successfully updated`;
