@@ -1,23 +1,37 @@
 import { MinioService } from 'src/shared/infrastructure/storage/services/minio.service';
-import { IDownloadFileUseCase } from './download-file.interface';
+import { FileDto, IDownloadFileUseCase } from './download-file.interface';
 import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
-import { Readable } from 'stream';
 import { Injectable } from '@nestjs/common';
+import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
 
 @Injectable()
 export class DownloadFileUseCase implements IDownloadFileUseCase {
   constructor(
     private readonly storageService: MinioService,
     private readonly event: EventHandlerLogger,
+    private readonly candidates: CandidatesRepository,
   ) {}
 
-  async run(path: string): Promise<Readable> {
-    const fielStream = await this.storageService.downloadFile(path);
-    if (!fielStream) {
-      this.event.notFound(`File ${path} was not found`);
+  async run(candidateId: string): Promise<FileDto> {
+    const candidate = await this.candidates.findOneById(candidateId);
+    if (!candidate) {
+      return this.event.badRequest(`Candidate ${candidateId} does not exist`);
     }
 
-    this.event.log(`File ${path} downloaded successfully`);
-    return fielStream;
+    const filename = candidate?.cvUrl;
+
+    if (!filename) {
+      return this.event.badRequest(
+        `Candidste ${candidateId} does not have a resume yet`,
+      );
+    }
+
+    const fielStream = await this.storageService.downloadFile(filename);
+    if (!fielStream) {
+      this.event.notFound(`File ${filename} was not found`);
+    }
+
+    this.event.log(`File ${filename} downloaded successfully`);
+    return { filename, file: fielStream };
   }
 }

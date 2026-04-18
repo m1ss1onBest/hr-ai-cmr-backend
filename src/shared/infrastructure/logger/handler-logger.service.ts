@@ -33,8 +33,7 @@ export class EventHandlerLogger extends Logger {
   ): never {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const errorMessage = `${msg}${err ? ` - ${err.message || err}` : ''}`;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.error(errorMessage, err?.stack ?? err);
+    this.warn(errorMessage);
     throw new ExceptionCtor(msg);
   }
 
@@ -59,7 +58,11 @@ export class EventHandlerLogger extends Logger {
   }
 
   internal(msg: string, err?: any): never {
-    return this.logAndThrow(InternalServerErrorException, msg, err);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const errorMessage = `${msg}${err ? ` - ${err.message || err}` : ''}`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.error(errorMessage, err?.stack ?? err);
+    throw new InternalServerErrorException(msg);
   }
 
   tooManyRequests(msg: string, err?: any): never {

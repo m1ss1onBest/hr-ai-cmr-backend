@@ -106,9 +106,23 @@ export class CandidatesRepository extends IBaseRepository {
     });
   }
 
+  async setCvUrl(id: string, fileUrl): Promise<CandidateModel | undefined> {
+    const existing = await this.findOneById(id);
+    if (!existing) {
+      return undefined;
+    }
+
+    return await this.prisma.candidate.update({
+      where: { id },
+      data: {
+        cvUrl: fileUrl,
+      },
+    });
+  }
+
   async softDelete(id: string): Promise<CandidateModel> {
     const existing = await this.findOneById(id);
-    if (!existing) throw new NotFoundException('Candidate');
+    if (!existing) throw new NotFoundException(`Candidate ${id} was not found`);
 
     return await this.prisma.candidate.update({
       where: { id },

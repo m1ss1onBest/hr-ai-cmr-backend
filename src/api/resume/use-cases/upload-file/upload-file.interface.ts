@@ -1,10 +1,13 @@
 import { Provider } from '@nestjs/common';
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
 import { UploadFileUseCase } from './upload-file.use-case';
-import { UploadFileResponse } from '../../dto/upload-filel.dto';
+import {
+  UploadFileResponse,
+  UploadResumeData,
+} from '../../dto/upload-filel.dto';
 
 export abstract class IUploadFileUsesCase extends IBaseUseCase<
-  Express.Multer.File,
+  UploadResumeData,
   UploadFileResponse
 > {}
 

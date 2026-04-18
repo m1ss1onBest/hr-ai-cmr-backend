@@ -31,7 +31,6 @@ import {
   SetPasswordRequest,
   SetPasswordResponse,
 } from './dto/set-password.dto';
-import { SetPasswordUseCase } from './use-cases/set-password/set-password.use-case';
 import { ISetPasswordUseCase } from './use-cases/set-password/set-password.interface';
 
 function setAuthCookies(
