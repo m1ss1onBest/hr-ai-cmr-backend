@@ -46,6 +46,7 @@ model Candidate {
   statusHistories      StatusHistory[]
   resumeAnalyses       ResumeAnalysis[]
   comments             Comment[]
+  matchCandidateWithVacancies MatchCandidateWithVacancy[]
 }
 
 model StatusHistory {
@@ -84,9 +85,36 @@ model Vacancy {
   updatedAt    DateTime      @default(now()) @updatedAt
   deletedAt    DateTime?
   applications Application[]
+  matchCandidateWithVacancies MatchCandidateWithVacancy[]
   createdBy    User          @relation(fields: [createdById], references: [id])
 }
 
+enum MatchRecommendation {
+  PROCEED
+  REVIEW_MANUALLY
+  REJECT
+}
+
+model MatchCandidateWithVacancy{
+  id          String          @id @default(uuid())
+  candidateId String
+  vacancyId   String
+
+
+  recommendation MatchRecommendation
+  matchPercentage Int
+  strengths Json
+  gaps   Json 
+  analyzedAt DateTime @default(now())
+
+
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  vacancy Vacancy @relation(fields: [vacancyId], references: [id])  
+  
+  //Unique constraint on candidateId and vacancyId
+   @@unique([candidateId, vacancyId])
+  
+}
 model Application {
   id          String          @id @default(uuid())
   candidateId String
