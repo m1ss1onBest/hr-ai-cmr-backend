@@ -4,7 +4,7 @@ export enum MatchRecommendation {
   REVIEW_MANUALLY = 'REVIEW_MANUALLY',
   REJECT = 'REJECT',
 }
-export class MatchCandidateResponseDto {
+export class MatchCandidateResponse {
   @ApiProperty({ description: 'Відсоток збігу', example: 85 })
   matchPercentage: number;
   @ApiProperty({

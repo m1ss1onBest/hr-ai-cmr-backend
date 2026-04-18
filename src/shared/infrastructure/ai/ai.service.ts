@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { IAiProvider } from './contracts/ai-provider.interface';
 import { EventHandlerLogger } from '../logger/handler-logger.service';
 
-
 export interface ResumeAnalysisResult {
   skills: string[];
   level: string | null;
