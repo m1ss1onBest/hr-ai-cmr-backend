@@ -34,11 +34,6 @@ import {
 } from './dto/update.candidate.dto';
 import { IUpdateCandidateUseCase } from './use-cases/update-candidate/update-candidate.interface';
 import { IDeleteCandidateUseCase } from './use-cases/delete-candidate/delete-candidate.interface';
-import { IAnalyzeResumeUseCase } from './use-cases/analyze-resume/analyze-resume.interface';
-import {
-  AnalyzeResumeRequest,
-  ResumeAnalysisResponse,
-} from './dto/analyze-resume.dto';
 import { ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
 import { Roles } from '../auth/modules/guards/roles.decorator';
@@ -71,7 +66,6 @@ export class CandidatesControllerV1 {
     private readonly searchCandidates: ISearchCandidatesUseCase,
     private readonly updateCandidate: IUpdateCandidateUseCase,
     private readonly deleteCandidate: IDeleteCandidateUseCase,
-    private readonly analyzeResume: IAnalyzeResumeUseCase,
     private readonly updateCandidateStatus: IUpdateCandidateStatusUseCase,
     private readonly addComment: IAddCommentUseCase,
     private readonly getComments: IGetCandidateCommentsUseCase,
@@ -131,24 +125,6 @@ export class CandidatesControllerV1 {
   @ApiResponse({ status: 404, description: 'Candidate not found' })
   async remove(@Param('id') id: string): Promise<void> {
     await this.deleteCandidate.run({ id });
-  }
-
-  @Post(':id/analyze-resume')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'Resume analyzed successfully',
-    type: ResumeAnalysisResponse,
-  })
-  @ApiResponse({ status: 404, description: 'Candidate not found' })
-  @ApiResponse({ status: 408, description: 'AI request timed out' })
-  @ApiResponse({ status: 429, description: 'AI rate limit exceeded' })
-  @ApiResponse({ status: 503, description: 'AI service unavailable' })
-  async analyzeResumeForCandidate(
-    @Param('id') id: string,
-    @Body() request: AnalyzeResumeRequest,
-  ): Promise<ResumeAnalysisResponse> {
-    return await this.analyzeResume.run({ candidateId: id, ...request });
   }
 
   @Patch(':id/status')
