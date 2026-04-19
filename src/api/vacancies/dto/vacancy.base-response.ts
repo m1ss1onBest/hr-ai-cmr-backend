@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IVacancyData } from 'src/shared/domain/vacancies/vacancy.entity';
+import {
+  IVacancyData,
+  VacancyStatus,
+} from 'src/shared/domain/vacancies/vacancy.entity';
 
 export class VacancyBaseResponse implements IVacancyData {
   @ApiProperty({
@@ -25,13 +28,34 @@ export class VacancyBaseResponse implements IVacancyData {
     description: 'Offered salary',
     example: '3000 USD',
   })
-  salary?: string;
+  salaryRange?: string;
 
   @ApiProperty({
-    description: 'Array of candidate requirements',
-    example: ['3+ years experience', 'English B2', 'Team management'],
+    required: false,
+    description: 'Work mode',
+    example: 'Remote',
   })
-  requirements: unknown;
+  workMode?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Experience',
+    example: '5',
+  })
+  experience?: string;
+
+  @ApiProperty({
+    enum: VacancyStatus,
+    example: VacancyStatus.OPEN,
+  })
+  status: VacancyStatus;
+
+  @ApiProperty({
+    required: false,
+    description: 'Location',
+    example: 'Kyiv',
+  })
+  location?: string;
 
   @ApiProperty({
     description: 'Technology stack',

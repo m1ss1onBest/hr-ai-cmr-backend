@@ -72,14 +72,22 @@ model CandidateCredential {
   candidate   Candidate   @relation(fields: [candidateId], references: [id])
 }
 
+enum VacancyStatus {
+  OPEN
+  CLOSED
+  PAUSED
+}
+
 model Vacancy {
   id           String        @id @default(uuid())
   createdById  String
   title        String        @db.VarChar(255)
   description  String
-  salary       String?
-  /// Array of candidate requirements
-  requirements Json
+  location     String?       @db.VarChar(255)
+  salaryRange  String?      @db.VarChar(255)
+  workMode     String?      @db.VarChar(255)
+  experience   String?       @db.VarChar(255)
+  status       VacancyStatus @default(OPEN)
   techStack    String[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @default(now()) @updatedAt
@@ -99,8 +107,6 @@ model MatchCandidateWithVacancy{
   id          String          @id @default(uuid())
   candidateId String
   vacancyId   String
-
-
   recommendation MatchRecommendation
   matchPercentage Int
   strengths Json
