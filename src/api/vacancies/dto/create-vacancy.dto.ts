@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -7,6 +8,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { VacancyBaseResponse } from './vacancy.base-response';
+import { VacancyStatus } from 'src/shared/domain/vacancies/vacancy.entity';
 
 export class CreateVacancyRequest {
   @IsString()
@@ -33,17 +35,44 @@ export class CreateVacancyRequest {
   @ApiProperty({
     required: false,
     description: 'Offered salary',
-    example: '3000 USD',
+    example: '3000-3500 USD',
   })
-  salary?: string;
+  salaryRange?: string;
 
-  @IsArray()
-  @IsString({ each: true })
+  @IsOptional()
+  @IsString()
   @ApiProperty({
-    description: 'Array of candidate requirements',
-    example: ['3+ years experience', 'English B2', 'Team management'],
+    required: false,
+    description: 'Work mode',
+    example: 'Remote',
   })
-  requirements: string[];
+  workMode?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description: 'Experience',
+    example: '5',
+  })
+  experience?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description: 'Location',
+    example: 'Kyiv',
+  })
+  location?: string;
+
+  @IsOptional()
+  @ApiProperty({
+    enum: VacancyStatus,
+    example: VacancyStatus.OPEN,
+  })
+  @IsEnum(VacancyStatus)
+  status: VacancyStatus;
 
   @IsArray()
   @IsString({ each: true })

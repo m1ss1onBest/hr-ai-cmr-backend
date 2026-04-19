@@ -1,9 +1,15 @@
+import { VacancyStatus } from 'prisma/generated/enums';
+export { VacancyStatus };
+
 export interface IVacancyData {
   id: string;
   title: string;
   description: string;
-  salary?: string | null;
-  requirements: unknown;
+  salaryRange?: string | null;
+  workMode?: string | null;
+  experience?: string | null;
+  location?: string | null;
+  status: VacancyStatus;
   techStack: string[];
   createdById: string;
   createdAt: Date;
@@ -15,8 +21,11 @@ export class Vacancy implements IVacancyData {
   id: string;
   title: string;
   description: string;
-  salary?: string | null;
-  requirements: unknown;
+  salaryRange?: string | null;
+  workMode?: string | null;
+  experience?: string | null;
+  location?: string | null;
+  status: VacancyStatus;
   techStack: string[];
   createdById: string;
   createdAt: Date;

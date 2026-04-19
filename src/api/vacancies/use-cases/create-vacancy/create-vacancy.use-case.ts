@@ -18,8 +18,11 @@ export class CreateVacancyUseCase implements ICreateVacancyUseCase {
       const vacancy = await this.vacanciesRepo.create({
         title: request.title,
         description: request.description,
-        salary: request.salary,
-        requirements: request.requirements,
+        salaryRange: request.salaryRange,
+        workMode: request.workMode,
+        experience: request.experience,
+        location: request.location,
+        status: request.status,
         techStack: request.techStack,
         createdById: request.createdById,
       });
