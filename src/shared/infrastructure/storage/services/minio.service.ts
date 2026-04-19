@@ -3,6 +3,8 @@ import { Client } from 'minio';
 import { Readable } from 'stream';
 import { IStorageService } from '../storage.interface';
 import { StorageConfig } from '../storage.config';
+import { fileTypeFromBuffer } from 'file-type';
+import * as mammoth from 'mammoth';
 
 @Injectable()
 export class MinioService implements OnModuleInit, IStorageService {
@@ -34,6 +36,34 @@ export class MinioService implements OnModuleInit, IStorageService {
   async downloadFile(objectName: string): Promise<Readable> {
     return await this.client.getObject(this.bucket, objectName);
   }
+  async getFileBuffer(objectName: string): Promise<Buffer> {
+    try {
+      const stream = await this.client.getObject(this.bucket, objectName);
+      const chunks: Uint8Array[] = [];
+
+      return new Promise((resolve, reject) => {
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('error', (err) => {
+          this.logger.error(`Error reading stream from MinIO: ${err.message}`);
+          reject(err);
+        });
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+    } catch (err) {
+      this.logger.error(`Failed to get object from MinIO: ${objectName}`);
+      throw err;
+    }
+  }
+  async convertDocxToText(buffer: Buffer): Promise<string> {
+    try {
+      const result = await mammoth.extractRawText({ buffer });
+      this.logger.log('DOCX converted to text successfully');
+      return result.value;
+    } catch (error) {
+      this.logger.error('Failed to convert DOCX to text', error);
+      throw new Error('Could not parse DOCX file');
+    }
+  }
 
   async _checkBucket(bucketName: string) {
     const maxRetries = 5;
@@ -61,5 +91,24 @@ export class MinioService implements OnModuleInit, IStorageService {
     }
 
     this.logger.error(`MinIO is not available`);
+  }
+
+  async checkFileType(buffer: Buffer): Promise<'PDF' | 'DOCX' | 'UNSUPPORTED'> {
+    const type = await fileTypeFromBuffer(buffer);
+
+    if (!type) return 'UNSUPPORTED';
+
+    if (type.mime === 'application/pdf') {
+      return 'PDF';
+    }
+
+    if (
+      type.mime ===
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      return 'DOCX';
+    }
+
+    return 'UNSUPPORTED';
   }
 }

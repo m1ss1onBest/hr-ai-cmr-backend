@@ -20,37 +20,40 @@ export class AnalyzeResumeUseCase implements IAnalyzeResumeUseCase {
 
   async run(candidateId: string): Promise<ResumeAnalysisResponse> {
     const candidate = await this.candidatesRepo.findOneById(candidateId);
-    if (!candidate) {
-      return this.logger.notFound(`Candidate with id=${candidateId} not found`);
-    }
-    const filename = candidate?.cvUrl;
-    if (!filename) {
+    if (!candidate?.cvUrl) {
       return this.logger.notFound(
-        `Candidate with id=${candidateId} does not have a resume`,
+        `Resume not found for candidate ${candidateId}`,
       );
     }
 
-    const file = await this.storageService.downloadFile(filename);
-    if (!file) {
-      return this.logger.notFound(`File ${filename} was not found`);
+    const fileBuffer = await this.storageService.getFileBuffer(candidate.cvUrl);
+
+    const fileType = await this.storageService.checkFileType(fileBuffer);
+    if (fileType === 'UNSUPPORTED') {
+      this.logger.warn(`Unsupported file format attempted: ${candidate.cvUrl}`);
+      throw new Error('We support only PDF and DOCX formats');
     }
 
-    const analysisResult = await this.aiService.analyzeResume(file);
+    let analysisResult: ResumeAnalysisResponse;
 
+    try {
+      if (fileType === 'PDF') {
+        analysisResult = await this.aiService.analyzeResumeFromFile(
+          fileBuffer,
+          'application/pdf',
+        );
+      } else {
+        const text = await this.storageService.convertDocxToText(fileBuffer);
+        analysisResult = await this.aiService.analyzeResumeFromText(text);
+      }
+    } catch (error) {
+      this.logger.error('AI Analysis failed', error);
+      throw error;
+    }
     await this.resumeAnalysisRepo.create({
-      candidateId: candidateId,
-      skills: analysisResult.skills,
-      level: analysisResult.level,
-      yearsOfExperience: analysisResult.yearsOfExperience,
-      technologies: analysisResult.technologies,
-      softSkills: analysisResult.softSkills,
-      score: analysisResult.score,
-      summary: analysisResult.summary,
+      candidateId,
+      ...analysisResult,
     });
-
-    this.logger.log(
-      `Resume analysis saved | candidateId=${candidateId} | score=${analysisResult.score}`,
-    );
 
     return analysisResult;
   }

@@ -10,12 +10,10 @@ import { IMatchCandidateUseCase } from './use-cases/match-candidate/match-candid
 import { Roles } from '../auth/modules/guards/roles.decorator';
 import { UserRole } from 'prisma/generated/enums';
 import { ApiResponse } from '@nestjs/swagger';
-import {
-  AnalyzeResumeRequest,
-  ResumeAnalysisResponse,
-} from './dto/analyze-resume.dto';
+import { ResumeAnalysisResponse } from './dto/analyze-resume.dto';
 import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/modules/guards/roles.guard';
+import { IAnalyzeResumeUseCase } from './use-cases/analyze-resume/analyze-resume.interface';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller({
@@ -23,7 +21,10 @@ import { RolesGuard } from '../auth/modules/guards/roles.guard';
   path: 'ai',
 })
 export class AiControllerV1 {
-  constructor(private readonly matchCandidateUseCase: IMatchCandidateUseCase) {}
+  constructor(
+    private readonly matchCandidateUseCase: IMatchCandidateUseCase,
+    private readonly analyzeResumeUseCase: IAnalyzeResumeUseCase,
+  ) {}
 
   @Post('match-candidate/candidate/:candidateId/vacancy/:vacancyId')
   @Roles(UserRole.HR)
@@ -55,8 +56,7 @@ export class AiControllerV1 {
   @ApiResponse({ status: 503, description: 'AI service unavailable' })
   async analyzeResumeForCandidate(
     @Param('id') id: string,
-    @Body() request: AnalyzeResumeRequest,
   ): Promise<ResumeAnalysisResponse> {
-    return await this.analyzeResume.run({ candidateId: id, ...request });
+    return await this.analyzeResumeUseCase.run(id);
   }
 }

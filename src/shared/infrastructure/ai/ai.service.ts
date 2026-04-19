@@ -70,17 +70,36 @@ export class AiService {
 
   constructor(private readonly aiProvider: IAiProvider) {}
 
-  async analyzeResume(resumeText: string): Promise<ResumeAnalysisResult> {
-    this.logger.log('Starting resume analysis via AI...');
+  async analyzeResumeFromFile(
+    fileBuffer: Buffer,
+    mimeType: string = 'application/pdf',
+  ): Promise<ResumeAnalysisResult> {
+    this.logger.log('Starting resume analysis from PDF file...');
+
+    const result = await this.aiProvider.analyzeFile<ResumeAnalysisResult>(
+      fileBuffer,
+      mimeType,
+      RESUME_ANALYSIS_SYSTEM_PROMPT,
+    );
+
+    this.logger.log(
+      `File analysis completed | level=${result.level} | score=${result.score}`,
+    );
+
+    return result;
+  }
+
+  async analyzeResumeFromText(text: string): Promise<ResumeAnalysisResult> {
+    this.logger.log('Starting resume analysis from text (DOCX)...');
 
     const result =
       await this.aiProvider.analyzeStructured<ResumeAnalysisResult>(
-        resumeText,
+        text,
         RESUME_ANALYSIS_SYSTEM_PROMPT,
       );
 
     this.logger.log(
-      `Resume analysis completed | level=${result.level} | score=${result.score}`,
+      `Text analysis completed | level=${result.level} | score=${result.score}`,
     );
 
     return result;
@@ -91,8 +110,8 @@ export class AiService {
     vacancy: string,
   ): Promise<MatchCandidateWithVacancyResult> {
     this.logger.log('Starting candidate-vacancy matching via AI...');
-    const collectedPrompt = `Candidate Resume: ${resumeAnalysis}\n
-    Vacancy: ${vacancy}`;
+
+    const collectedPrompt = `Candidate Resume: ${resumeAnalysis}\n\nVacancy: ${vacancy}`;
 
     const result =
       await this.aiProvider.analyzeStructured<MatchCandidateWithVacancyResult>(
@@ -101,7 +120,7 @@ export class AiService {
       );
 
     this.logger.log(
-      `Candidate-vacancy matching completed | recommendation=${result.recommendation} | matchPercentage=${result.matchPercentage}`,
+      `Matching completed | recommendation=${result.recommendation} | matchPercentage=${result.matchPercentage}`,
     );
 
     return result;
