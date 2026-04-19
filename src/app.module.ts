@@ -14,6 +14,8 @@ import { ResumeModule } from './api/resume/resume.module';
 import { StorageModule } from './shared/infrastructure/storage/storage.module';
 import { RedisModule } from './shared/infrastructure/redis/redis.module';
 import { CryptoModule } from './shared/infrastructure/crypto/crypto.module';
+import { AiModule } from './api/ai/ai.module';
+import { AiInfrastructureModule } from './shared/infrastructure/ai/ai.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { CryptoModule } from './shared/infrastructure/crypto/crypto.module';
     StorageModule,
     RedisModule,
     CryptoModule,
+    AiInfrastructureModule,
+    AiModule,
   ],
 })
 export class AppModule implements NestModule {

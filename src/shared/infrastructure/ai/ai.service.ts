@@ -45,7 +45,25 @@ const RESUME_ANALYSIS_SYSTEM_PROMPT = `Ти — HR-аналітик з 10-річ
 
 Відповідай ВИКЛЮЧНО об'єктом JSON.`;
 
-const MATCH_CANDIDATE_WITH_VACANCY_SYSTEM_PROMPT = ``;
+const MATCH_CANDIDATE_WITH_VACANCY_SYSTEM_PROMPT = `You are an Expert Technical HR Analyst with 10 years of experience in recruitment. Your task is to perform a deep comparative analysis between a candidate's profile (resume analysis) and a job vacancy's requirements, and determine how well they match.
+
+### INSTRUCTIONS:
+1. Analyze the provided JSON containing the candidate's parsed resume and the JSON containing the vacancy requirements.
+2. Compare the candidate's skills, level, experience, and technologies against the vacancy's mandatory and nice-to-have requirements.
+3. Calculate an objective "matchPercentage" (0 to 100) representing how well the candidate fits the role. Be strict but fair.
+4. Identify 3-5 key "strengths" where the candidate perfectly aligns with or exceeds the vacancy requirements.
+5. Identify any "gaps" (missing skills, insufficient experience, etc.) where the candidate falls short. If none, return an empty array.
+6. Provide a final "recommendation" strictly using one of the following exact string values: "HIGHLY_RECOMMENDED", "RECOMMENDED", "REVIEW_MANUALLY", or "REJECT".
+
+### RESPONSE FORMAT (JSON):
+{
+  "recommendation": "HIGHLY_RECOMMENDED" | "RECOMMENDED" | "REVIEW_MANUALLY" | "REJECT",
+  "matchPercentage": number (0-100),
+  "strengths": ["string"],
+  "gaps": ["string"]
+}
+
+Respond EXCLUSIVELY with a valid JSON object.`;
 @Injectable()
 export class AiService {
   private readonly logger = new EventHandlerLogger(AiService.name);

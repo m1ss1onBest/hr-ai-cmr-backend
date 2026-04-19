@@ -22,4 +22,4 @@ import { DisabledAiProvider } from './providers/disabled-ai.provider';
   ],
   exports: [AiService],
 })
-export class AiModule {}
+export class AiInfrastructureModule {}

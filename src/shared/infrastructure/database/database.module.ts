@@ -5,6 +5,7 @@ import { VacanciesRepository } from './repositories/vacancies.repository';
 import { CandidatesRepository } from './repositories/candidates.repository';
 import { ResumeAnalysisRepository } from './repositories/resume-analysis.repository';
 import { CommentsRepository } from './repositories/comments.repository';
+import { MatchCandidateVacancyRepository } from './repositories/match-candidate-vacancy.repository';
 
 export const REPOSITORIES: Provider[] = [
   UsersRepository,
@@ -12,6 +13,7 @@ export const REPOSITORIES: Provider[] = [
   CandidatesRepository,
   ResumeAnalysisRepository,
   CommentsRepository,
+  MatchCandidateVacancyRepository,
 ];
 
 @Module({
