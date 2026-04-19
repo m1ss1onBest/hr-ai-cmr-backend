@@ -1,16 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-
-export class AnalyzeResumeRequest {
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({
-    description: 'Plain text content of the resume to analyze',
-    example:
-      'Іван Петренко, Senior Software Engineer, 7 років досвіду. TypeScript, NestJS, PostgreSQL, Docker, Kubernetes. Працював у 3 продуктових командах.',
-  })
-  resumeText: string;
-}
 
 export class ResumeAnalysisResponse {
   @ApiProperty({

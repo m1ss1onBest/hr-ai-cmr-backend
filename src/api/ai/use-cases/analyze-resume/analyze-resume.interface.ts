@@ -1,13 +1,10 @@
 import { IBaseUseCase } from 'src/shared/contracts/use-cases/base.use-case';
-import {
-  AnalyzeResumeRequest,
-  ResumeAnalysisResponse,
-} from '../../dto/analyze-resume.dto';
 import { Provider } from '@nestjs/common';
 import { AnalyzeResumeUseCase } from './analyze-resume.use-case';
+import { ResumeAnalysisResponse } from '../../dto/analyze-resume.dto';
 
 export abstract class IAnalyzeResumeUseCase extends IBaseUseCase<
-  AnalyzeResumeRequest & { candidateId: string },
+  string,
   ResumeAnalysisResponse
 > {}
 
