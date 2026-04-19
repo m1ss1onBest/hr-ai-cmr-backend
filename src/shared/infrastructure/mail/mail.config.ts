@@ -5,7 +5,7 @@ import {
   IsUrl,
   ValidateIf,
 } from 'class-validator';
-import { Config } from '../../config';
+import { Config } from '../config';
 
 @Config()
 export class MailConfig {
@@ -50,7 +50,7 @@ export class MailConfig {
     process.env.EMAIL_FORGOT_PASSWORD_URL!;
 
   get isEnabled(): boolean {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = process.env.MAIL_ENABLED === 'production';
     // In local/dev we keep mail disabled by default to avoid SMTP timeouts.
     // Enable explicitly by setting MAIL_ENABLED=true.
     const mailEnabledFlag = (process.env.MAIL_ENABLED ?? '').toLowerCase();

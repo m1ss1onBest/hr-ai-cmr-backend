@@ -18,4 +18,3 @@ export class VerifyEmailResponse {
   @ApiProperty({ example: true })
   ok: boolean;
 }
-

@@ -106,9 +106,23 @@ export class CandidatesRepository extends IBaseRepository {
     });
   }
 
+  async setCvUrl(id: string, fileUrl): Promise<CandidateModel | undefined> {
+    const existing = await this.findOneById(id);
+    if (!existing) {
+      return undefined;
+    }
+
+    return await this.prisma.candidate.update({
+      where: { id },
+      data: {
+        cvUrl: fileUrl,
+      },
+    });
+  }
+
   async softDelete(id: string): Promise<CandidateModel> {
     const existing = await this.findOneById(id);
-    if (!existing) throw new NotFoundException('Candidate');
+    if (!existing) throw new NotFoundException(`Candidate ${id} was not found`);
 
     return await this.prisma.candidate.update({
       where: { id },
@@ -120,10 +134,10 @@ export class CandidatesRepository extends IBaseRepository {
     searchQuery: SearchCandidatesQuery,
   ): Promise<PaginatedResponse<CandidateModel>> {
     const page = searchQuery.page ?? 1;
-    const limit = searchQuery.limit ?? searchQuery.limit ?? 20;
+    const limit = searchQuery.limit ?? 20;
 
     const sortBy = searchQuery.sortBy ?? 'createdAt';
-    const order = searchQuery.order ?? searchQuery.limit ?? 'desc';
+    const order = searchQuery.order ?? 'desc';
 
     const where: Prisma.CandidateWhereInput = {
       deletedAt: null,

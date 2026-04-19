@@ -16,6 +16,7 @@ import { RedisModule } from './shared/infrastructure/redis/redis.module';
 import { CryptoModule } from './shared/infrastructure/crypto/crypto.module';
 import { AiModule } from './api/ai/ai.module';
 import { AiInfrastructureModule } from './shared/infrastructure/ai/ai.module';
+import { AnalyticsModule } from './api/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AiInfrastructureModule } from './shared/infrastructure/ai/ai.module';
     CryptoModule,
     AiInfrastructureModule,
     AiModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule implements NestModule {

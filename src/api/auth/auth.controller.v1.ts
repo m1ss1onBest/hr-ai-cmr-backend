@@ -23,7 +23,7 @@ import {
   ACCESS_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_NAME,
 } from './modules/jwt/jwt.constants';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { ForgotPasswordRequestResponse } from './dto/forgot-password-request.dto';
 import { IForgotPasswordRequestUseCase } from './use-cases/forgot-password-request/forgot-password-request.interface';
@@ -31,7 +31,6 @@ import {
   SetPasswordRequest,
   SetPasswordResponse,
 } from './dto/set-password.dto';
-import { SetPasswordUseCase } from './use-cases/set-password/set-password.use-case';
 import { ISetPasswordUseCase } from './use-cases/set-password/set-password.interface';
 
 function setAuthCookies(
@@ -91,10 +90,7 @@ export class AuthControllerV1 {
     status: HttpStatus.CONFLICT,
     description: 'Email already in use',
   })
-  async register(
-    @Body() dto: RegisterUserRequest,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async register(@Body() dto: RegisterUserRequest) {
     const { user } = await this.authService.register(dto);
 
     // Don't set auth cookies until email is verified.
@@ -162,6 +158,19 @@ export class AuthControllerV1 {
   }
 
   @Post('request-password-reset/:email')
+  @ApiOperation({
+    summary: 'Request password change',
+    description: 'Request a verification token to set up a new password',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Password reset request was successfully sent to email@addr.com',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User with such email does not exist',
+  })
   @HttpCode(200)
   async requestPasswordReset(
     @Param('email') email: string,
@@ -171,6 +180,19 @@ export class AuthControllerV1 {
 
   @Post('set-password')
   @HttpCode(200)
+  @ApiOperation({
+    description: "Set new user password by token sent to user's email",
+    summary: 'Set new user password',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User password has been successfully updated',
+    type: SetPasswordResponse,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Token expired or invalid',
+  })
   async setPassword(
     @Body() request: SetPasswordRequest,
   ): Promise<SetPasswordResponse> {

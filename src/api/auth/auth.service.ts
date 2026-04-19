@@ -68,7 +68,9 @@ export class AuthService {
           }
 
           // Verified user -> real conflict
-          this.logger.warn(`Register failed: email already taken (${dto.email})`);
+          this.logger.warn(
+            `Register failed: email already taken (${dto.email})`,
+          );
           throw new ConflictException('Email already taken');
         }
 
@@ -102,7 +104,7 @@ export class AuthService {
           fresh?.emailVerificationToken ?? '',
         );
       } catch (e: unknown) {
-        const isProd = process.env.NODE_ENV === 'production';
+        const isProd = process.env.MAIL_ENABLED === 'production';
         this.logger.error('Verify email send failed', e as any);
 
         if (isProd) {
@@ -221,7 +223,9 @@ export class AuthService {
     }
 
     if (!user.emailVerificationToken || user.emailVerificationToken !== token) {
-      this.logger.warn(`Email verification failed (invalid token) for ${email}`);
+      this.logger.warn(
+        `Email verification failed (invalid token) for ${email}`,
+      );
       throw new UnauthorizedException('Invalid verification token');
     }
 
@@ -229,7 +233,9 @@ export class AuthService {
       user.emailVerificationExpiresAt &&
       user.emailVerificationExpiresAt.getTime() < Date.now()
     ) {
-      this.logger.warn(`Email verification failed (token expired) for ${email}`);
+      this.logger.warn(
+        `Email verification failed (token expired) for ${email}`,
+      );
       throw new UnauthorizedException('Verification token expired');
     }
 
