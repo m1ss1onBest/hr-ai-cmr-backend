@@ -6,7 +6,6 @@ import { CREATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/create/create-ca
 import { SEARCH_CANDIDATES_USE_CASE_PROVIDER } from './use-cases/search-candidates/search-candiadtes.interface';
 import { UPDATE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/update-candidate/update-candidate.interface';
 import { DELETE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/delete-candidate/delete-candidate.interface';
-import { ANALYZE_RESUME_USE_CASE_PROVIDER } from './use-cases/analyze-resume/analyze-resume.interface';
 import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 import { AuthModule } from '../auth/auth.module';
 import { AiInfrastructureModule } from 'src/shared/infrastructure/ai/ai.module';
@@ -24,7 +23,6 @@ export const CANDIDATE_MODULE_PROVIDERS = [
   SEARCH_CANDIDATES_USE_CASE_PROVIDER,
   UPDATE_CANDIDATE_USE_CASE_PROVIDER,
   DELETE_CANDIDATE_USE_CASE_PROVIDER,
-  ANALYZE_RESUME_USE_CASE_PROVIDER,
   UPDATE_CANDIDATE_STATUS_USE_CASE_PROVIDER,
   ADD_COMMENT_USE_CASE_PROVIDER,
   GET_CANDIDATE_COMMENTS_USE_CASE_PROVIDER,

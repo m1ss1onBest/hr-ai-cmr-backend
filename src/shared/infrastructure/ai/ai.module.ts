@@ -4,17 +4,21 @@ import aiConfig from './config/index';
 import { IAiProvider } from './contracts/ai-provider.interface';
 import { GeminiProvider } from './providers/gemini.provider';
 import { AiService } from './ai.service';
-import { DisabledAiProvider } from './providers/disabled-ai.provider';
 
 @Module({
   imports: [ConfigModule.forFeature(aiConfig)],
   providers: [
     {
       provide: IAiProvider,
-      useFactory: (cfg: { apiKey?: string }) => {
-        return cfg?.apiKey
-          ? new GeminiProvider(cfg as any)
-          : new DisabledAiProvider();
+      useFactory: (cfg: {
+        apiKey: string;
+        model: string;
+        timeoutMs: number;
+      }) => {
+        if (!cfg.apiKey) {
+          throw new Error('GEMINI_API_KEY is not configured.');
+        }
+        return new GeminiProvider(cfg);
       },
       inject: [aiConfig.KEY],
     },

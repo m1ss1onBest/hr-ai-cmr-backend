@@ -15,11 +15,6 @@ export class GeminiProvider extends IAiProvider {
     private readonly config: ConfigType<typeof aiConfig>,
   ) {
     super();
-    if (!this.config.apiKey) {
-      this.logger.internal(
-        'GEMINI_API_KEY is not configured. Please set it in the .env file.',
-      );
-    }
     this.client = new GoogleGenAI({ apiKey: this.config.apiKey });
   }
 
@@ -33,12 +28,7 @@ export class GeminiProvider extends IAiProvider {
           abortSignal: AbortSignal.timeout(this.config.timeoutMs),
         },
       });
-
-      if (!response.text) {
-        this.logger.internal('AI returned empty response');
-      }
-
-      return response.text!;
+      return response.text ?? '';
     } catch (error) {
       return this.handleAiError(error);
     }
@@ -57,32 +47,59 @@ export class GeminiProvider extends IAiProvider {
       });
 
       if (!response.text) {
-        this.logger.internal('AI returned empty response for structured query');
+        throw new Error('AI returned empty response');
       }
 
-      return JSON.parse(response.text!) as T;
+      return JSON.parse(response.text) as T;
+    } catch (error) {
+      return this.handleAiError(error);
+    }
+  }
+
+  async analyzeFile<T>(
+    file: Buffer,
+    mimeType: string,
+    systemPrompt: string,
+  ): Promise<T> {
+    try {
+      const response = await this.client.models.generateContent({
+        model: this.config.model,
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  data: file.toString('base64'),
+                  mimeType: mimeType,
+                },
+              },
+              { text: 'Analyze this file according to the instructions.' },
+            ],
+          },
+        ],
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          abortSignal: AbortSignal.timeout(this.config.timeoutMs),
+        },
+      });
+
+      if (!response.text) {
+        throw new Error('AI returned empty response for file analysis');
+      }
+
+      return JSON.parse(response.text) as T;
     } catch (error) {
       if (error instanceof SyntaxError) {
         this.logger.internal(
-          'AI returned invalid JSON. Failed to parse response.',
+          'AI returned invalid JSON from file analysis',
           error,
         );
       }
       return this.handleAiError(error);
     }
   }
-
-  // async analuzeStructuredFiles(
-  // fileUrl: string,
-  // systemPrompt: string,
-  //: Promise<T> {
-  // try {
-  //   const response = await this.client.models.generateContent({
-  //     model: this.config.model,
-  //
-  //   })
-  // }
-  // }
 
   private handleAiError(error: unknown): never {
     if (error && typeof error === 'object' && 'getStatus' in error) {

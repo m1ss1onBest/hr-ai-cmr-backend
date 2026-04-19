@@ -5,8 +5,13 @@ import { MATCH_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/match-candidate/m
 import { AiControllerV1 } from './ai.controller.v1';
 import { AiInfrastructureModule } from 'src/shared/infrastructure/ai/ai.module';
 import { DatabaseModule } from 'src/shared/infrastructure/database/database.module';
+import { ANALYZE_RESUME_USE_CASE_PROVIDER } from './use-cases/analyze-resume/analyze-resume.interface';
+import { AuthModule } from '../auth/auth.module';
 
-export const AI_MODULE_PROVIDERS = [MATCH_CANDIDATE_USE_CASE_PROVIDER];
+export const AI_MODULE_PROVIDERS = [
+  MATCH_CANDIDATE_USE_CASE_PROVIDER,
+  ANALYZE_RESUME_USE_CASE_PROVIDER,
+];
 
 @Module({
   imports: [
@@ -14,6 +19,7 @@ export const AI_MODULE_PROVIDERS = [MATCH_CANDIDATE_USE_CASE_PROVIDER];
     LoggerModule,
     AiInfrastructureModule,
     DatabaseModule,
+    AuthModule,
   ],
   controllers: [AiControllerV1],
   providers: [...AI_MODULE_PROVIDERS],
