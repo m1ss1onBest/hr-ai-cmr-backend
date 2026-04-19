@@ -1,8 +1,7 @@
 import { Controller, HttpCode, Param, Post } from '@nestjs/common';
 import { IMatchCandidateUseCase } from './use-cases/match-candidate/match-candidate.interface';
-import { Body } from '@nestjs/common';
 import { Roles } from '../auth/modules/guards/roles.decorator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from 'prisma/generated/enums';
 
 @Controller({
   version: '1',
