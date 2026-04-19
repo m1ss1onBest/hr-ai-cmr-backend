@@ -9,7 +9,7 @@ import { DELETE_CANDIDATE_USE_CASE_PROVIDER } from './use-cases/delete-candidate
 import { ANALYZE_RESUME_USE_CASE_PROVIDER } from './use-cases/analyze-resume/analyze-resume.interface';
 import { LoggerModule } from 'src/shared/infrastructure/logger/logger.module';
 import { AuthModule } from '../auth/auth.module';
-import { AiModule } from 'src/shared/infrastructure/ai/ai.module';
+import { AiInfrastructureModule } from 'src/shared/infrastructure/ai/ai.module';
 import { UPDATE_CANDIDATE_STATUS_USE_CASE_PROVIDER } from './use-cases/update-candidate-status/update-candidate-status.interface';
 import { ADD_COMMENT_USE_CASE_PROVIDER } from './use-cases/comments/add-comment/add-comment.interface';
 import { GET_CANDIDATE_COMMENTS_USE_CASE_PROVIDER } from './use-cases/comments/get-comments/get-comments.interface';
@@ -34,7 +34,13 @@ export const CANDIDATE_MODULE_PROVIDERS = [
 ] as Provider[];
 
 @Module({
-  imports: [DatabaseModule, LoggerModule, AuthModule, AiModule, FilesModule],
+  imports: [
+    DatabaseModule,
+    LoggerModule,
+    AuthModule,
+    AiInfrastructureModule,
+    FilesModule,
+  ],
   controllers: [CandidatesControllerV1],
   providers: CANDIDATE_MODULE_PROVIDERS,
 })
