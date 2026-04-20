@@ -2,10 +2,8 @@
 /dist
 /node_modules
 /build
-/uploads
 
 # Logs
-**/trace.txt
 logs
 *.log
 npm-debug.log*
