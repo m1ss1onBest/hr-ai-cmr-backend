@@ -10,6 +10,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/shared/infrastructure/database/prisma.service';
 import { JwtAuthGuard } from '../src/api/auth/modules/guards/jwt-auth.guard';
+import { beforeEach, describe } from 'node:test';
 
 describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   let app: INestApplication;
