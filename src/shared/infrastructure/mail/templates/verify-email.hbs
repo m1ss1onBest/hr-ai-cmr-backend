@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #4CAF50;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .link {
+      margin-top: 15px;
+      word-break: break-all;
+      color: #555;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Verify your email</h2>
+    <p>Please click the button below to confirm your email address.</p>
+
+    <a href="{{verifyUrl}}" class="button">
+      Verify Email
+    </a>
+
+    <p class="link">
+      Or copy and paste this link:<br>
+      {{verifyUrl}}
+    </p>
+  </div>
+</body>
+</html>
