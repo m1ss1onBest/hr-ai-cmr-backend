@@ -38,11 +38,7 @@ describe('Auth (e2e)', () => {
   const getPrismaMock = () => app.get(PrismaService) as unknown as PrismaMock;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue({
+    const prismaMock: any = {
         $connect: () => Promise.resolve(),
         $disconnect: () => Promise.resolve(),
         user: {
@@ -51,7 +47,14 @@ describe('Auth (e2e)', () => {
             .fn()
             .mockRejectedValue(new Error('Not implemented in test')),
         },
-      })
+    };
+    prismaMock.$transaction = jest.fn().mockImplementation((cb: any) => cb(prismaMock));
+
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(PrismaService)
+      .useValue(prismaMock)
       .overrideProvider(MailService)
       .useValue({
         sendVerifyEmail: jest.fn().mockResolvedValue(undefined),

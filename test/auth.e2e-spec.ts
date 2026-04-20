@@ -10,20 +10,20 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/shared/infrastructure/database/prisma.service';
 import { JwtAuthGuard } from '../src/api/auth/modules/guards/jwt-auth.guard';
-import { beforeEach, describe } from 'node:test';
 
 describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   let app: INestApplication;
   let prisma: any;
 
   beforeEach(async () => {
-    const prismaMock = {
-      user: { findUnique: jest.fn(), create: jest.fn() },
+    const prismaMock: any = {
+      user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn().mockResolvedValue({}) },
       candidate: {
         findMany: jest.fn().mockResolvedValue([]),
         count: jest.fn().mockResolvedValue(0),
       },
     };
+    prismaMock.$transaction = jest.fn().mockImplementation((cb) => cb(prismaMock));
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -57,6 +57,7 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
     prisma.user.findUnique.mockResolvedValue({
       id: 'uuid',
       email: 'denys@stfalcon.com',
+      isEmailVerified: true,
     });
     return request(app.getHttpServer())
       .post('/api/v1/auth/register')
@@ -93,10 +94,11 @@ describe('Auth & Security (e2e) - HR access to admin route', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    const prismaMock = {
+    const prismaMock: any = {
       user: { findUnique: jest.fn(), create: jest.fn() },
       candidate: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) }
     };
+    prismaMock.$transaction = jest.fn().mockImplementation((cb) => cb(prismaMock));
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
