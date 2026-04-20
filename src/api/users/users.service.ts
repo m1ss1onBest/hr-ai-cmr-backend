@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { SafeUserData, User } from 'src/shared/domain/users/user.entity';
 import { UsersRepository } from 'src/shared/infrastructure/database/repositories/users.repository';
 
-// TODO:
-// move it to a use case later
 @Injectable()
 export class UsersService {
   constructor(private readonly usersRepo: UsersRepository) {}
