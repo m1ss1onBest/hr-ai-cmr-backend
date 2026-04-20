@@ -110,7 +110,6 @@ describe('Auth & Security (e2e) - HR access to admin route', () => {
 
           if (!auth) throw new UnauthorizedException();
 
-          // Simulate HR user (not ADMIN) — admin route should deny access
           req.user = { id: 'hr-user-1', role: 'HR' };
 
           const { ForbiddenException } = require('@nestjs/common');
