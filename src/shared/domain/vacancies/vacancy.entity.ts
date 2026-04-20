@@ -5,6 +5,7 @@ export interface IVacancyData {
   id: string;
   title: string;
   description: string;
+  department?: string | null;
   salaryRange?: string | null;
   workMode?: string | null;
   experience?: string | null;
@@ -21,6 +22,7 @@ export class Vacancy implements IVacancyData {
   id: string;
   title: string;
   description: string;
+  department?: string | null;
   salaryRange?: string | null;
   workMode?: string | null;
   experience?: string | null;
