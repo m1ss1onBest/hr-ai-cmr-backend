@@ -29,6 +29,15 @@ export class CreateVacancyRequest {
   })
   description: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  @ApiProperty({
+    description: 'Vacancy department (team)',
+    example: 'Backend Development',
+  })
+  department: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(255)

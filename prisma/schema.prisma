@@ -83,6 +83,7 @@ model Vacancy {
   createdById  String
   title        String        @db.VarChar(255)
   description  String
+  department  String?       @db.VarChar(255)
   location     String?       @db.VarChar(255)
   salaryRange  String?      @db.VarChar(255)
   workMode     String?      @db.VarChar(255)

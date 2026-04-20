@@ -24,6 +24,12 @@ export class VacancyBaseResponse implements IVacancyData {
   description: string;
 
   @ApiProperty({
+    description: 'Vacancy department (team)',
+    example: 'Backend Development',
+  })
+  department: string;
+
+  @ApiProperty({
     required: false,
     description: 'Offered salary',
     example: '3000 USD',
