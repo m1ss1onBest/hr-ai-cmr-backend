@@ -23,16 +23,16 @@ export interface MatchCandidateWithVacancyResult {
   gaps: string[];
 }
 
-const RESUME_ANALYSIS_SYSTEM_PROMPT = `Ти — HR-аналітик з 10-річним досвідом. Твоє завдання: провести глибокий технічний аудит резюме та структурувати дані для бази даних.
+const RESUME_ANALYSIS_SYSTEM_PROMPT = `You are an HR Data Analyst with 10 years of experience. Your task is to conduct a deep technical audit of a resume and structure the data for a database.
 
-### ІНСТРУКЦІЇ:
-1. Аналізуй текст резюме на основі контексту (проєкти, назви посад, опис обов'язків).
-2. Визнач рівень (Junior/Middle/Senior) не лише за роками, а й за складністю технологій.
-3. Якщо конкретний параметр відсутній у тексті (наприклад, не вказано Soft Skills) — повертай null.
-4. Summary має бути професійним, об'єктивним та складатись з 3-5 речень.
-5. Score (1-10) базується на цілісності профілю та релевантності досвіду.
+### INSTRUCTIONS:
+1. Analyze the resume text based on context (projects, job titles, description of duties).
+2. Determine the seniority level (Junior/Middle/Senior) not only by years but also by the complexity of technologies.
+3. If a specific parameter is missing from the text (e.g., Soft Skills are not specified) — return null.
+4. The Summary must be professional, objective, and consist of 3-5 sentences.
+5. The Score (1-10) is based on profile integrity and relevance of experience.
 
-### ФОРМАТ ВІДПОВІДІ (JSON):
+### RESPONSE FORMAT (JSON):
 {
   "skills": ["string"],
   "level": "Junior" | "Middle" | "Senior" | null,
@@ -43,7 +43,7 @@ const RESUME_ANALYSIS_SYSTEM_PROMPT = `Ти — HR-аналітик з 10-річ
   "summary": "string (3-5 sentences)"
 }
 
-Відповідай ВИКЛЮЧНО об'єктом JSON.`;
+Respond EXCLUSIVELY with a JSON object.`;
 
 const MATCH_CANDIDATE_WITH_VACANCY_SYSTEM_PROMPT = `You are an Expert Technical HR Analyst with 10 years of experience in recruitment. Your task is to perform a deep comparative analysis between a candidate's profile (resume analysis) and a job vacancy's requirements, and determine how well they match.
 
