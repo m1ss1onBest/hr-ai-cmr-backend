@@ -1,0 +1,280 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  Patch,
+  Req,
+  BadRequestException,
+  UploadedFile,
+  UseInterceptors,
+  Headers,
+} from '@nestjs/common';
+import { CandidateBaseResponse } from './dto/candidate.base-response';
+import { IGetCandidateUseCase } from './use-cases/get-candidate/get-candidate.interface';
+import {
+  CreateCandidateRequest,
+  CreateCandidateResponse,
+} from './dto/create.candidate.dto';
+import { ICreateCandidateUseCase } from './use-cases/create/create-candidate.interface';
+import {
+  SearchCandidatesPaginatedResponse,
+  SearchCandidatesQuery,
+} from './dto/search.candidates.dto';
+import { ISearchCandidatesUseCase } from './use-cases/search-candidates/search-candiadtes.interface';
+import {
+  UpdateCandidateRequest,
+  UpdateCandidateResponse,
+} from './dto/update.candidate.dto';
+import { IUpdateCandidateUseCase } from './use-cases/update-candidate/update-candidate.interface';
+import { IDeleteCandidateUseCase } from './use-cases/delete-candidate/delete-candidate.interface';
+import { ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/modules/guards/jwt-auth.guard';
+import { Roles } from '../auth/modules/guards/roles.decorator';
+import { UserRole } from 'prisma/generated/enums';
+import { Request } from 'express';
+import { UpdateCandidateStatusRequest } from './dto/update.candidate-status.dto';
+import { IUpdateCandidateStatusUseCase } from './use-cases/update-candidate-status/update-candidate-status.interface';
+import {
+  CandidateCommentResponse,
+  CreateCandidateCommentRequest,
+  UpdateCandidateCommentRequest,
+} from './dto/comments.dto';
+import { IAddCommentUseCase } from './use-cases/comments/add-comment/add-comment.interface';
+import { IGetCandidateCommentsUseCase } from './use-cases/comments/get-comments/get-comments.interface';
+import { IUpdateCommentUseCase } from './use-cases/comments/update-comment/update-comment.interface';
+import { IDeleteCommentUseCase } from './use-cases/comments/delete-comment/delete-comment.interface';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { IUploadResumeUseCase } from './use-cases/upload-resume/upload-resume.interface';
+
+@Controller({
+  version: '1',
+  path: 'candidates',
+})
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class CandidatesControllerV1 {
+  constructor(
+    private readonly getCandidate: IGetCandidateUseCase,
+    private readonly createCandidate: ICreateCandidateUseCase,
+    private readonly searchCandidates: ISearchCandidatesUseCase,
+    private readonly updateCandidate: IUpdateCandidateUseCase,
+    private readonly deleteCandidate: IDeleteCandidateUseCase,
+    private readonly updateCandidateStatus: IUpdateCandidateStatusUseCase,
+    private readonly addComment: IAddCommentUseCase,
+    private readonly getComments: IGetCandidateCommentsUseCase,
+    private readonly updateComment: IUpdateCommentUseCase,
+    private readonly deleteComment: IDeleteCommentUseCase,
+    private readonly uploadResume: IUploadResumeUseCase,
+  ) {}
+
+  @Get(':id')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Candidate found',
+    type: CandidateBaseResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Candidate not found',
+  })
+  async getOneById(@Param('id') id: string): Promise<CandidateBaseResponse> {
+    return await this.getCandidate.run(id);
+  }
+
+  @Get()
+  @HttpCode(200)
+  async getCandidates(
+    @Query() query: SearchCandidatesQuery,
+  ): Promise<SearchCandidatesPaginatedResponse> {
+    return await this.searchCandidates.run(query);
+  }
+
+  @Post()
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  async create(
+    @Body() request: CreateCandidateRequest,
+  ): Promise<CreateCandidateResponse> {
+    return await this.createCandidate.run(request);
+  }
+
+  @Put(':id')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  @ApiResponse({ status: 200, description: 'Candidate updated' })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  async update(
+    @Param('id') id: string,
+    @Body() request: UpdateCandidateRequest,
+  ): Promise<UpdateCandidateResponse> {
+    return await this.updateCandidate.run({ id, ...request });
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.HR)
+  @HttpCode(204)
+  @ApiResponse({ status: 204, description: 'Candidate deleted (soft)' })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.deleteCandidate.run({ id });
+  }
+
+  @Patch(':id/status')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  @ApiResponse({ status: 200, description: 'Candidate status updated' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 404, description: 'Candidate not found' })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateCandidateStatusRequest,
+    @Req() req: Request,
+  ): Promise<CandidateBaseResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.updateCandidateStatus.run({
+      id,
+      status: dto.status,
+      changedById: user.id,
+    });
+  }
+
+  @Post(':id/comments')
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  async addCandidateComment(
+    @Param('id') candidateId: string,
+    @Body() dto: CreateCandidateCommentRequest,
+    @Req() req: Request,
+  ): Promise<CandidateCommentResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.addComment.run({
+      candidateId,
+      authorId: user.id,
+      text: dto.text,
+    });
+  }
+
+  @Get(':id/comments')
+  @HttpCode(200)
+  async getCandidateComments(
+    @Param('id') candidateId: string,
+  ): Promise<CandidateCommentResponse[]> {
+    return await this.getComments.run({ candidateId });
+  }
+
+  @Put(':id/comments/:commentId')
+  @Roles(UserRole.HR)
+  @HttpCode(200)
+  async updateCandidateComment(
+    @Param('id') candidateId: string,
+    @Param('commentId') commentId: string,
+    @Body() dto: UpdateCandidateCommentRequest,
+    @Req() req: Request,
+  ): Promise<CandidateCommentResponse> {
+    const user = req['_user'] as { id: string };
+    return await this.updateComment.run({
+      candidateId,
+      commentId,
+      authorId: user.id,
+      text: dto.text,
+    });
+  }
+
+  @Delete(':id/comments/:commentId')
+  @Roles(UserRole.HR)
+  @HttpCode(204)
+  async deleteCandidateComment(
+    @Param('id') candidateId: string,
+    @Param('commentId') commentId: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req['_user'] as { id: string };
+    await this.deleteComment.run({ candidateId, commentId, authorId: user.id });
+  }
+
+  @Post(':id/resume')
+  @Roles(UserRole.HR)
+  @HttpCode(201)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const lower = (file.originalname || '').toLowerCase();
+        const allowedExt = lower.endsWith('.pdf') || lower.endsWith('.docx');
+
+        // Some clients (e.g., node fetch FormData) may send application/octet-stream.
+        const allowedMime = new Set([
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/octet-stream',
+        ]);
+
+        if (!allowedExt) {
+          return cb(
+            new BadRequestException('Only .pdf and .docx files are allowed'),
+            false,
+          );
+        }
+
+        if (file.mimetype && !allowedMime.has(file.mimetype)) {
+          return cb(
+            new BadRequestException('Only .pdf and .docx files are allowed'),
+            false,
+          );
+        }
+
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadCandidateResume(
+    @Param('id') candidateId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+    @Headers('content-type') contentType?: string,
+  ): Promise<{ cvUrl: string }> {
+    const anyReq = req as unknown as { files?: unknown };
+    const files = anyReq.files;
+    const fallbackFile: Express.Multer.File | undefined =
+      file ??
+      (Array.isArray(files) ? (files[0] as Express.Multer.File) : undefined);
+
+    if (!fallbackFile) {
+      throw new BadRequestException(
+        `File is required. Received Content-Type: ${contentType ?? 'unknown'}. ` +
+          'Ensure you send multipart/form-data with field name "file" and do not override Content-Type header manually.',
+      );
+    }
+
+    return await this.uploadResume.run({
+      candidateId,
+      file: {
+        buffer: fallbackFile.buffer,
+        originalname: fallbackFile.originalname,
+        mimetype: fallbackFile.mimetype,
+        size: fallbackFile.size,
+      },
+    });
+  }
+
+  @Get(':id/resume')
+  @HttpCode(200)
+  async getCandidateResume(
+    @Param('id') candidateId: string,
+  ): Promise<{ cvUrl: string }> {
+    const candidate = await this.getCandidate.run(candidateId);
+    if (!candidate.cvUrl) {
+      throw new BadRequestException('Candidate has no resume uploaded');
+    }
+    return { cvUrl: candidate.cvUrl };
+  }
+}

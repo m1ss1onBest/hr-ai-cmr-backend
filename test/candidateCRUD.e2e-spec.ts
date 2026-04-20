@@ -4,7 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/shared/infrastructure/database/prisma.service';
-import { JwtAuthGuard } from '../src/api/auth/modules/guards/jwt-auth.guard'; 
+import { JwtAuthGuard } from '../src/api/auth/modules/guards/jwt-auth.guard';
 
 describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () => {
   let app: INestApplication<App>;
@@ -17,7 +17,7 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
     name: 'Denys Sh',
     cvUrl: 'https://example.com/cv.pdf',
     expectedSalary: '2000 USD',
-    position: positionUuid, 
+    position: positionUuid,
   };
 
   beforeEach(async () => {
@@ -30,7 +30,9 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
         update: jest.fn(),
       },
       user: { findUnique: jest.fn() },
-      position: { findUnique: jest.fn().mockResolvedValue({ id: positionUuid }) }
+      position: {
+        findUnique: jest.fn().mockResolvedValue({ id: positionUuid }),
+      },
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -39,21 +41,26 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
       .overrideProvider(PrismaService)
       .useValue(prismaMock)
       .overrideGuard(JwtAuthGuard)
-      .useValue({ canActivate: () => true }) 
+      .useValue({ canActivate: () => true })
       .compile();
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api');
     app.enableVersioning();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
 
     await app.init();
     prisma = app.get(PrismaService);
   });
 
   it('POST /api/v1/candidates -> 201 Success (KAN-113)', async () => {
-    prisma.candidate.create.mockResolvedValue({ id: candidateId, ...validCandidateData });
-    
+    prisma.candidate.create.mockResolvedValue({
+      id: candidateId,
+      ...validCandidateData,
+    });
+
     return request(app.getHttpServer())
       .post('/api/v1/candidates')
       .send(validCandidateData)
@@ -63,17 +70,22 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
   it('POST /api/v1/candidates -> 400 Missing required fields (KAN-114)', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/v1/candidates')
-      .send({}) 
+      .send({})
       .expect(400);
 
     expect(response.body.message).toContain('position should not be empty');
-    expect(response.body.message).toContain('cvUrl must be a URL address'); 
-    expect(response.body.message).toContain('expectedSalary should not be empty');
+    expect(response.body.message).toContain('cvUrl must be a URL address');
+    expect(response.body.message).toContain(
+      'expectedSalary should not be empty',
+    );
   });
 
   it('DELETE /api/v1/candidates/:id -> 204 Soft Delete (KAN-115)', async () => {
     prisma.candidate.findUnique.mockResolvedValue({ id: candidateId });
-    prisma.candidate.update.mockResolvedValue({ id: candidateId, deletedAt: new Date() });
+    prisma.candidate.update.mockResolvedValue({
+      id: candidateId,
+      deletedAt: new Date(),
+    });
 
     return request(app.getHttpServer())
       .delete(`/api/v1/candidates/${candidateId}`)
@@ -81,7 +93,9 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
   });
 
   it('GET /api/v1/candidates -> 200 Search and Filter (KAN-116, KAN-118)', async () => {
-    prisma.candidate.findMany.mockResolvedValue([{ id: candidateId, ...validCandidateData }]);
+    prisma.candidate.findMany.mockResolvedValue([
+      { id: candidateId, ...validCandidateData },
+    ]);
     prisma.candidate.count.mockResolvedValue(1);
 
     return request(app.getHttpServer())
@@ -98,7 +112,7 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
       .post('/api/v1/candidates')
       .send({
         ...validCandidateData,
-        cvUrl: 'not-a-valid-url' 
+        cvUrl: 'not-a-valid-url',
       })
       .expect(400);
   });
@@ -108,7 +122,7 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
       .post('/api/v1/candidates')
       .send({
         ...validCandidateData,
-        name: 'a'.repeat(256) 
+        name: 'a'.repeat(256),
       })
       .expect(400);
   });

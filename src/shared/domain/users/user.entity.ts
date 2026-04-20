@@ -4,34 +4,32 @@ import { UserModel } from 'prisma/generated/models';
 export interface IUserData {
   id: string;
   password: string;
+  name: string;
   email: string;
   role: UserRole;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
 }
 
 export class User implements IUserData {
   id: string;
   password: string;
+  name: string;
   email: string;
   role: UserRole;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
 
-  constructor(data: IUserData | UserModel) {
-    this.id = data.id;
-    this.email = data.email;
-    this.password = data.password;
-    this.role = data.role;
-
-    this.created_at = data.created_at;
-    this.updated_at = data.updated_at;
+  constructor(props: IUserData | UserModel) {
+    Object.assign(this, props);
   }
 
   safe(): SafeUserData {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...user } = this;
-    return this;
+    return user;
   }
 }
 
