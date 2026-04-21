@@ -22,7 +22,10 @@ export type AllowedCandidateStatusInput =
   (typeof ALLOWED_CANDIDATE_STATUS_INPUTS)[number];
 
 export class UpdateCandidateStatusRequest {
-  @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase() : value))
+  @Transform(({ value }): unknown => {
+    if (typeof value !== 'string') return value;
+    return value.toUpperCase();
+  })
   @IsString()
   @IsIn(ALLOWED_CANDIDATE_STATUS_INPUTS, {
     message: `status must be one of: ${ALLOWED_CANDIDATE_STATUS_INPUTS.join(', ')}`,

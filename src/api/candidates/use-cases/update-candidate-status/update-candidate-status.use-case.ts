@@ -9,11 +9,19 @@ const STATUS_INPUT_TO_ENUM: Record<string, CandidateStatus> = {
   NEW: CandidateStatus.NEW,
   SCREENING: CandidateStatus.SCREENING,
   INTERVIEW: CandidateStatus.INTERVIEW,
-  TEST_TASK: CandidateStatus.TEST_TALK, // API alias -> DB enum
+
+  // common board aliases
+  TEST_TASK: CandidateStatus.TEST_TALK,
   TEST_TALK: CandidateStatus.TEST_TALK,
+  TEST: CandidateStatus.TEST_TALK,
+
   OFFER: CandidateStatus.OFFER,
   HIRED: CandidateStatus.HIRED,
   REJECTED: CandidateStatus.REJECTED,
+
+  // extra aliases some UIs use
+  DECLINED: CandidateStatus.REJECTED,
+  REFUSED: CandidateStatus.REJECTED,
 };
 
 @Injectable()
@@ -30,12 +38,20 @@ export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCa
     changedById: string;
   }): Promise<Candidate> {
     try {
-      const normalized = String(request.status).toUpperCase();
+      this.logger.log(
+        `Update status request | candidateId=${request.id} | statusRaw=${String(request.status)} | userId=${request.changedById}`,
+      );
+
+      const normalized = String(request.status).trim().toUpperCase();
       const statusEnum = STATUS_INPUT_TO_ENUM[normalized];
+
+      this.logger.log(
+        `Update status normalized | candidateId=${request.id} | statusNormalized=${normalized} | mapped=${statusEnum ?? 'INVALID'}`,
+      );
 
       if (!statusEnum) {
         this.logger.badRequest(
-          `Invalid status. Allowed: ${Object.keys(STATUS_INPUT_TO_ENUM).join(', ')}`,
+          `Invalid status '${normalized}'. Allowed: ${Object.keys(STATUS_INPUT_TO_ENUM).join(', ')}`,
         );
       }
 
@@ -49,13 +65,14 @@ export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCa
         `Candidate status updated | id=${updated.id} | status=${statusEnum}`,
       );
 
-      // currentStatus isn't present in generated prisma types yet; attach it to response.
       return new Candidate({ ...updated, currentStatus: statusEnum });
     } catch (err) {
-      this.logger.badRequest('Failed to update candidate status', err);
+      this.logger.badRequest(
+        `Failed to update candidate status | candidateId=${request.id} | statusRaw=${String(request.status)} | userId=${request.changedById}`,
+        err,
+      );
     }
 
-    // Unreachable: logger.* methods throw, but TS needs a return.
     return undefined as never;
   }
 }

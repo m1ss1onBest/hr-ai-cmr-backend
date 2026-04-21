@@ -5,6 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import * as express from 'express';
 import * as path from 'path';
+import { HttpLoggingInterceptor } from './shared/infrastructure/http/logging.interceptor';
+import { AllExceptionsFilter } from './shared/infrastructure/http/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +30,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useGlobalInterceptors(new HttpLoggingInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('hr-crm API')
