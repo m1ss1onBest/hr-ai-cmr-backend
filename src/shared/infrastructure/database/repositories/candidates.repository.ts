@@ -225,13 +225,6 @@ export class CandidatesRepository extends IBaseRepository {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { [sortBy]: order },
-      include: {
-        statusHistories: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-          select: { status: true },
-        },
-      },
     };
 
     const [data, total] = await Promise.all([
@@ -239,17 +232,23 @@ export class CandidatesRepository extends IBaseRepository {
       this.prisma.candidate.count({ where: queryBuilder.where }),
     ]);
 
-    const mapped = data.map((c) => {
-      const anyC = c as any;
-      const last = anyC.statusHistories?.[0]?.status;
-      const base = { ...(anyC as any) };
-      delete (base as any).statusHistories;
-
-      return {
-        ...(base as CandidateModel),
-        currentStatus: last ?? CandidateStatus.NEW,
-      };
+    // Fetch latest status history for each candidate separately to avoid Prisma include issues.
+    const candidateIds = data.map((c) => c.id);
+    const latestStatuses = await this.prisma.statusHistory.findMany({
+      where: { candidateId: { in: candidateIds } },
+      orderBy: { createdAt: 'desc' },
+      distinct: ['candidateId'],
+      select: { candidateId: true, status: true },
     });
+
+    const statusMap = new Map(
+      latestStatuses.map((s) => [s.candidateId, s.status]),
+    );
+
+    const mapped = data.map((c) => ({
+      ...c,
+      currentStatus: statusMap.get(c.id) ?? CandidateStatus.NEW,
+    }));
 
     const totalPages = Math.ceil(total / limit);
 
@@ -275,8 +274,18 @@ export class CandidatesRepository extends IBaseRepository {
 
     const now = new Date();
 
+    // Best-effort sync Candidate.currentStatus when the column exists.
+    try {
+      await (this.prisma.candidate as any).update({
+        where: { id: params.candidateId },
+        data: { currentStatus: params.status, updatedAt: now },
+      });
+    } catch {
+      // ignore: environments without currentStatus column
+    }
+
     const [candidate] = await this.prisma.$transaction([
-      // Old behavior: status is stored in StatusHistory; candidate row only touches updatedAt.
+      // Always touch updatedAt so candidate list ordering/etc reacts.
       this.prisma.candidate.update({
         where: { id: params.candidateId },
         data: { updatedAt: now },
