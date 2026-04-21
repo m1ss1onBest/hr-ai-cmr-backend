@@ -202,12 +202,10 @@ export class CandidatesRepository extends IBaseRepository {
     const now = new Date();
 
     const [candidate] = await this.prisma.$transaction([
-      // CandidateStatus is stored in StatusHistory; this update is used to ensure
-      // candidate row changes in the same transaction (updatedAt) and to return
-      // an updated candidate snapshot.
+      // Store the latest status on Candidate row for fast reads and to keep API responses stable.
       this.prisma.candidate.update({
         where: { id: params.candidateId },
-        data: { updatedAt: now },
+        data: { currentStatus: params.status, updatedAt: now } as any,
       }),
       this.prisma.statusHistory.create({
         data: {
