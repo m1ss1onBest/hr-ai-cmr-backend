@@ -15,16 +15,18 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
 
   const validCandidateData = {
     name: 'Denys Sh',
+    email: 'denys.sh@example.com',
     cvUrl: 'https://example.com/cv.pdf',
     expectedSalary: '2000 USD',
     position: positionUuid,
   };
 
   beforeEach(async () => {
-    const prismaMock = {
+    const prismaMock: any = {
       candidate: {
         create: jest.fn(),
         findUnique: jest.fn(),
+        findFirst: jest.fn().mockResolvedValue(null),
         findMany: jest.fn(),
         count: jest.fn(),
         update: jest.fn(),
@@ -34,6 +36,7 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
         findUnique: jest.fn().mockResolvedValue({ id: positionUuid }),
       },
     };
+    prismaMock.$transaction = jest.fn().mockImplementation((cb: any) => cb(prismaMock));
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -64,6 +67,11 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
     return request(app.getHttpServer())
       .post('/api/v1/candidates')
       .send(validCandidateData)
+      .expect((res) => {
+        if (res.status !== 201) {
+          console.log(res.body);
+        }
+      })
       .expect(201);
   });
 
@@ -74,10 +82,8 @@ describe('Candidates (e2e)- CRUD/Soft Delete/Search/Filter-sort/Validation', () 
       .expect(400);
 
     expect(response.body.message).toContain('position should not be empty');
-    expect(response.body.message).toContain('cvUrl must be a URL address');
-    expect(response.body.message).toContain(
-      'expectedSalary should not be empty',
-    );
+    expect(response.body.message).toContain('name should not be empty');
+    expect(response.body.message).toContain('email should not be empty');
   });
 
   it('DELETE /api/v1/candidates/:id -> 204 Soft Delete (KAN-115)', async () => {

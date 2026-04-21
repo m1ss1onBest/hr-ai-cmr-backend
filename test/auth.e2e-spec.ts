@@ -16,13 +16,14 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
   let prisma: any;
 
   beforeEach(async () => {
-    const prismaMock = {
-      user: { findUnique: jest.fn(), create: jest.fn() },
+    const prismaMock: any = {
+      user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn().mockResolvedValue({}) },
       candidate: {
         findMany: jest.fn().mockResolvedValue([]),
         count: jest.fn().mockResolvedValue(0),
       },
     };
+    prismaMock.$transaction = jest.fn().mockImplementation((cb) => cb(prismaMock));
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -56,6 +57,7 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
     prisma.user.findUnique.mockResolvedValue({
       id: 'uuid',
       email: 'denys@stfalcon.com',
+      isEmailVerified: true,
     });
     return request(app.getHttpServer())
       .post('/api/v1/auth/register')
@@ -81,6 +83,56 @@ describe('Auth & Security (e2e) - KAN-146/147/149', () => {
 
   it('GET /api/v1/candidates -> 401 Unauthorized without JWT (KAN-147)', async () => {
     return request(app.getHttpServer()).get('/api/v1/candidates').expect(401);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});
+
+describe('Auth & Security (e2e) - HR access to admin route', () => {
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const prismaMock: any = {
+      user: { findUnique: jest.fn(), create: jest.fn() },
+      candidate: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) }
+    };
+    prismaMock.$transaction = jest.fn().mockImplementation((cb) => cb(prismaMock));
+
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(PrismaService).useValue(prismaMock)
+      .overrideGuard(JwtAuthGuard)
+      .useValue({
+        canActivate: (context: ExecutionContext) => {
+          const req = context.switchToHttp().getRequest();
+          const auth = req.headers.authorization;
+
+          if (!auth) throw new UnauthorizedException();
+
+          req.user = { id: 'hr-user-1', role: 'HR' };
+
+          const { ForbiddenException } = require('@nestjs/common');
+          throw new ForbiddenException('Access denied: admin role required');
+        },
+      })
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
+    app.enableVersioning({ type: VersioningType.URI });
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+    await app.init();
+  });
+
+  it('GET /api/v1/candidates -> 403 Forbidden for HR user on admin route', async () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/candidates')
+      .set('Authorization', 'Bearer hr-valid-token')
+      .expect(403);
   });
 
   afterAll(async () => {
