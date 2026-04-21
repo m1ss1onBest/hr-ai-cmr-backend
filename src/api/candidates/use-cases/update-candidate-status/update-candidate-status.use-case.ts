@@ -9,7 +9,7 @@ const STATUS_INPUT_TO_ENUM: Record<string, CandidateStatus> = {
   NEW: CandidateStatus.NEW,
   SCREENING: CandidateStatus.SCREENING,
   INTERVIEW: CandidateStatus.INTERVIEW,
-  TEST_TASK: CandidateStatus.TEST_TALK, // API canonical name -> current DB enum
+  TEST_TASK: CandidateStatus.TEST_TALK, // API alias -> DB enum
   TEST_TALK: CandidateStatus.TEST_TALK,
   OFFER: CandidateStatus.OFFER,
   HIRED: CandidateStatus.HIRED,
@@ -34,7 +34,7 @@ export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCa
       const statusEnum = STATUS_INPUT_TO_ENUM[normalized];
 
       if (!statusEnum) {
-        throw this.logger.badRequest(
+        this.logger.badRequest(
           `Invalid status. Allowed: ${Object.keys(STATUS_INPUT_TO_ENUM).join(', ')}`,
         );
       }
@@ -52,7 +52,10 @@ export class UpdateCandidateStatusUseCase implements IUpdateCandidateStatusUseCa
       // currentStatus isn't present in generated prisma types yet; attach it to response.
       return new Candidate({ ...updated, currentStatus: statusEnum });
     } catch (err) {
-      throw this.logger.badRequest('Failed to update candidate status', err);
+      this.logger.badRequest('Failed to update candidate status', err);
     }
+
+    // Unreachable: logger.* methods throw, but TS needs a return.
+    return undefined as never;
   }
 }

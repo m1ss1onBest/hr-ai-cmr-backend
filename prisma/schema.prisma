@@ -8,45 +8,42 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique @db.VarChar(255)
-  password  String
-  role      UserRole  @default(HR)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  deletedAt DateTime?
-  name      String    @db.VarChar(255)
-
-  // Email verification
-  isEmailVerified            Boolean   @default(false)
-  emailVerificationToken     String?   @db.VarChar(64)
+  id                         String          @id @default(uuid())
+  email                      String          @unique @db.VarChar(255)
+  password                   String
+  role                       UserRole        @default(HR)
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @default(now()) @updatedAt
+  deletedAt                  DateTime?
+  name                       String          @db.VarChar(255)
+  emailVerificationToken     String?         @db.VarChar(64)
   emailVerificationExpiresAt DateTime?
-
-  statusHistories StatusHistory[]
-  vacancies       Vacancy[]
-  comments        Comment[]
+  isEmailVerified            Boolean         @default(false)
+  comments                   Comment[]
+  statusHistories            StatusHistory[]
+  vacancies                  Vacancy[]
 }
 
 model Candidate {
-  id                   String                @id @default(uuid())
-  name                 String                @db.VarChar(255)
-  email                String                @unique @db.VarChar(255)
-  phone                String?               @db.VarChar(50)
-  linkedInUrl          String?               @db.VarChar(2048)
-  comment              String?
-  cvUrl                String?
-  expectedSalary       String?               @db.VarChar(255)
-  positionId           String
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @default(now()) @updatedAt
-  deletedAt            DateTime?
-  applications         Application[]
-  Position             Position              @relation(fields: [positionId], references: [id])
-  candidateCredentials CandidateCredential[]
-  statusHistories      StatusHistory[]
-  resumeAnalyses       ResumeAnalysis[]
-  comments             Comment[]
+  id                          String                      @id @default(uuid())
+  name                        String                      @db.VarChar(255)
+  cvUrl                       String?
+  expectedSalary              String?                     @db.VarChar(255)
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @default(now()) @updatedAt
+  deletedAt                   DateTime?
+  comment                     String?
+  email                       String                      @unique @db.VarChar(255)
+  linkedInUrl                 String?                     @db.VarChar(2048)
+  phone                       String?                     @db.VarChar(50)
+  positionId                  String
+  applications                Application[]
+  Position                    Position                    @relation(fields: [positionId], references: [id])
+  candidateCredentials        CandidateCredential[]
+  comments                    Comment[]
   matchCandidateWithVacancies MatchCandidateWithVacancy[]
+  resumeAnalyses              ResumeAnalysis[]
+  statusHistories             StatusHistory[]
 }
 
 model StatusHistory {
@@ -72,56 +69,41 @@ model CandidateCredential {
   candidate   Candidate   @relation(fields: [candidateId], references: [id])
 }
 
-enum VacancyStatus {
-  OPEN
-  CLOSED
-  PAUSED
-}
-
 model Vacancy {
-  id           String        @id @default(uuid())
-  createdById  String
-  title        String        @db.VarChar(255)
-  description  String
-  department  String?       @db.VarChar(255)
-  location     String?       @db.VarChar(255)
-  salaryRange  String?      @db.VarChar(255)
-  workMode     String?      @db.VarChar(255)
-  experience   String?       @db.VarChar(255)
-  status       VacancyStatus @default(OPEN)
-  techStack    String[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @default(now()) @updatedAt
-  deletedAt    DateTime?
-  applications Application[]
+  id                          String                      @id @default(uuid())
+  createdById                 String
+  title                       String                      @db.VarChar(255)
+  description                 String
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @default(now()) @updatedAt
+  deletedAt                   DateTime?
+  techStack                   String[]
+  experience                  String?                     @db.VarChar(255)
+  location                    String?                     @db.VarChar(255)
+  salaryRange                 String?                     @db.VarChar(255)
+  status                      VacancyStatus               @default(OPEN)
+  workMode                    String?                     @db.VarChar(255)
+  department                  String?                     @db.VarChar(255)
+  applications                Application[]
   matchCandidateWithVacancies MatchCandidateWithVacancy[]
-  createdBy    User          @relation(fields: [createdById], references: [id])
+  createdBy                   User                        @relation(fields: [createdById], references: [id])
 }
 
-enum MatchRecommendation {
-  PROCEED
-  REVIEW_MANUALLY
-  REJECT
-}
-
-model MatchCandidateWithVacancy{
-  id          String          @id @default(uuid())
-  candidateId String
-  vacancyId   String
-  recommendation MatchRecommendation
+model MatchCandidateWithVacancy {
+  id              String              @id @default(uuid())
+  candidateId     String
+  vacancyId       String
+  recommendation  MatchRecommendation
   matchPercentage Int
-  strengths Json
-  gaps   Json 
-  analyzedAt DateTime @default(now())
+  strengths       Json
+  gaps            Json
+  analyzedAt      DateTime            @default(now())
+  candidate       Candidate           @relation(fields: [candidateId], references: [id])
+  vacancy         Vacancy             @relation(fields: [vacancyId], references: [id])
 
-
-  candidate Candidate @relation(fields: [candidateId], references: [id])
-  vacancy Vacancy @relation(fields: [vacancyId], references: [id])  
-  
-  //Unique constraint on candidateId and vacancyId
-   @@unique([candidateId, vacancyId])
-  
+  @@unique([candidateId, vacancyId])
 }
+
 model Application {
   id          String          @id @default(uuid())
   candidateId String
@@ -141,12 +123,12 @@ model Position {
 model ResumeAnalysis {
   id                String    @id @default(uuid())
   candidateId       String
-  skills            Json // string[]
-  level             String?   @db.VarChar(50) // Junior | Middle | Senior | null
+  skills            Json
+  level             String?   @db.VarChar(50)
   yearsOfExperience Int?
-  technologies      Json // string[]
-  softSkills        Json? // string[] | null
-  score             Int // 1-10
+  technologies      Json
+  softSkills        Json?
+  score             Int
   summary           String
   analyzedAt        DateTime  @default(now())
   candidate         Candidate @relation(fields: [candidateId], references: [id])
@@ -160,12 +142,23 @@ model Comment {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
   deletedAt   DateTime?
-
-  candidate Candidate @relation(fields: [candidateId], references: [id])
-  author    User      @relation(fields: [authorId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id])
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
 
   @@index([candidateId])
   @@index([authorId])
+}
+
+enum VacancyStatus {
+  OPEN
+  CLOSED
+  PAUSED
+}
+
+enum MatchRecommendation {
+  PROCEED
+  REVIEW_MANUALLY
+  REJECT
 }
 
 enum UserRole {
