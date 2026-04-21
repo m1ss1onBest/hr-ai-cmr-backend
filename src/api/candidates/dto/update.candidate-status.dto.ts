@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 /**
  * API accepts both enum values and backward/typo aliases.
@@ -21,6 +22,10 @@ export type AllowedCandidateStatusInput =
   (typeof ALLOWED_CANDIDATE_STATUS_INPUTS)[number];
 
 export class UpdateCandidateStatusRequest {
+  @Transform(({ value }): unknown => {
+    if (typeof value !== 'string') return value;
+    return value.toUpperCase();
+  })
   @IsString()
   @IsIn(ALLOWED_CANDIDATE_STATUS_INPUTS, {
     message: `status must be one of: ${ALLOWED_CANDIDATE_STATUS_INPUTS.join(', ')}`,
