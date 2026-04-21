@@ -5,10 +5,15 @@ import {
   IsString,
   IsUrl,
   MaxLength,
+  IsIn,
 } from 'class-validator';
 import { CandidateBaseResponse } from './candidate.base-response';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import {
+  ALLOWED_CANDIDATE_STATUS_INPUTS,
+  AllowedCandidateStatusInput,
+} from './update.candidate-status.dto';
 
 export class CreateCandidateRequest {
   @IsString()
@@ -91,6 +96,33 @@ export class CreateCandidateRequest {
     example: '4600 USD',
   })
   expectedSalary?: string;
+
+  @IsOptional()
+  @Transform(({ value }): unknown => {
+    if (value === null || value === undefined || value === '') return undefined;
+    if (typeof value !== 'string') return value;
+    return value.toUpperCase();
+  })
+  @IsString()
+  @IsIn(ALLOWED_CANDIDATE_STATUS_INPUTS, {
+    message: `status must be one of: ${ALLOWED_CANDIDATE_STATUS_INPUTS.join(', ')}`,
+  })
+  @ApiProperty({
+    required: false,
+    description: 'Initial candidate status (defaults to NEW)',
+    example: 'NEW',
+    enum: ALLOWED_CANDIDATE_STATUS_INPUTS,
+  })
+  status?: AllowedCandidateStatusInput;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    required: false,
+    description:
+      'Internal: creator user id (filled from JWT on backend; do not send from UI)',
+  })
+  createdById?: string;
 }
 
 export class CreateCandidateResponse extends CandidateBaseResponse {}

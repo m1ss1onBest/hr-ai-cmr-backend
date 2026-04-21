@@ -62,20 +62,46 @@ export class CandidatesRepository extends IBaseRepository {
 
     const positionId = await this.getOrCreatePositionIdByName(request.position);
 
-    return await this.prisma.candidate.create({
-      data: {
-        name: request.name,
-        email: request.email,
-        positionId,
-        ...(request.phone ? { phone: request.phone } : {}),
-        ...(request.linkedInUrl ? { linkedInUrl: request.linkedInUrl } : {}),
-        ...(request.comment ? { comment: request.comment } : {}),
-        ...(request.expectedSalary
-          ? { expectedSalary: request.expectedSalary }
-          : {}),
-        ...(request.cvUrl ? { cvUrl: request.cvUrl } : {}),
-      },
-    });
+    const now = new Date();
+    const candidateId = crypto.randomUUID();
+    const initialStatus = (request as any).status ?? CandidateStatus.NEW;
+
+    const tx: any[] = [
+      this.prisma.candidate.create({
+        data: {
+          id: candidateId,
+          name: request.name,
+          email: request.email,
+          positionId,
+          ...(request.phone ? { phone: request.phone } : {}),
+          ...(request.linkedInUrl ? { linkedInUrl: request.linkedInUrl } : {}),
+          ...(request.comment ? { comment: request.comment } : {}),
+          ...(request.expectedSalary
+            ? { expectedSalary: request.expectedSalary }
+            : {}),
+          ...(request.cvUrl ? { cvUrl: request.cvUrl } : {}),
+          createdAt: now,
+          updatedAt: now,
+        },
+      }),
+    ];
+
+    if (request.createdById) {
+      tx.push(
+        this.prisma.statusHistory.create({
+          data: {
+            id: crypto.randomUUID(),
+            candidateId,
+            status: initialStatus,
+            changedById: request.createdById,
+            createdAt: now,
+          },
+        }),
+      );
+    }
+
+    const [candidate] = await this.prisma.$transaction(tx);
+    return candidate;
   }
 
   async update(
@@ -130,9 +156,39 @@ export class CandidatesRepository extends IBaseRepository {
     });
   }
 
-  async searchMany(
+  async findOneByIdWithCurrentStatus(
+    id: string,
+  ): Promise<(CandidateModel & { currentStatus?: CandidateStatus }) | null> {
+    const candidate = await this.prisma.candidate.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        statusHistories: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { status: true },
+        },
+      },
+    });
+
+    if (!candidate) return null;
+
+    const last = candidate.statusHistories?.[0]?.status;
+
+    // Strip relation field from response shape
+    const base = { ...(candidate as any) };
+    delete (base as any).statusHistories;
+
+    return {
+      ...(base as CandidateModel),
+      currentStatus: last ?? CandidateStatus.NEW,
+    };
+  }
+
+  async searchManyWithCurrentStatus(
     searchQuery: SearchCandidatesQuery,
-  ): Promise<PaginatedResponse<CandidateModel>> {
+  ): Promise<
+    PaginatedResponse<CandidateModel & { currentStatus?: CandidateStatus }>
+  > {
     const page = searchQuery.page ?? 1;
     const limit = searchQuery.limit ?? 20;
 
@@ -144,7 +200,6 @@ export class CandidatesRepository extends IBaseRepository {
     };
 
     if (searchQuery.position?.length) {
-      // API provides position as names; filter through relation
       where.Position = {
         is: {
           name: { in: searchQuery.position },
@@ -170,6 +225,13 @@ export class CandidatesRepository extends IBaseRepository {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { [sortBy]: order },
+      include: {
+        statusHistories: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { status: true },
+        },
+      },
     };
 
     const [data, total] = await Promise.all([
@@ -177,10 +239,22 @@ export class CandidatesRepository extends IBaseRepository {
       this.prisma.candidate.count({ where: queryBuilder.where }),
     ]);
 
+    const mapped = data.map((c) => {
+      const anyC = c as any;
+      const last = anyC.statusHistories?.[0]?.status;
+      const base = { ...(anyC as any) };
+      delete (base as any).statusHistories;
+
+      return {
+        ...(base as CandidateModel),
+        currentStatus: last ?? CandidateStatus.NEW,
+      };
+    });
+
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data,
+      data: mapped,
       meta: {
         total,
         page,
@@ -202,10 +276,10 @@ export class CandidatesRepository extends IBaseRepository {
     const now = new Date();
 
     const [candidate] = await this.prisma.$transaction([
-      // Store the latest status on Candidate row for fast reads and to keep API responses stable.
+      // Old behavior: status is stored in StatusHistory; candidate row only touches updatedAt.
       this.prisma.candidate.update({
         where: { id: params.candidateId },
-        data: { currentStatus: params.status, updatedAt: now } as any,
+        data: { updatedAt: now },
       }),
       this.prisma.statusHistory.create({
         data: {

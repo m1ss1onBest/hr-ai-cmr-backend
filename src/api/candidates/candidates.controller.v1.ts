@@ -102,8 +102,13 @@ export class CandidatesControllerV1 {
   @HttpCode(201)
   async create(
     @Body() request: CreateCandidateRequest,
+    @Req() req: Request,
   ): Promise<CreateCandidateResponse> {
-    return await this.createCandidate.run(request);
+    const user = req['_user'] as { id: string };
+    return await this.createCandidate.run({
+      ...request,
+      createdById: user.id,
+    });
   }
 
   @Put(':id')

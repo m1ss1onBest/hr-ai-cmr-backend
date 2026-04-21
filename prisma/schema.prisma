@@ -37,6 +37,7 @@ model Candidate {
   linkedInUrl                 String?                     @db.VarChar(2048)
   phone                       String?                     @db.VarChar(50)
   positionId                  String
+  currentStatus               CandidateStatus             @default(NEW)
   applications                Application[]
   Position                    Position                    @relation(fields: [positionId], references: [id])
   candidateCredentials        CandidateCredential[]

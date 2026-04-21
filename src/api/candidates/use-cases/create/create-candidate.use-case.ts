@@ -7,6 +7,7 @@ import {
 import { CandidatesRepository } from 'src/shared/infrastructure/database/repositories/candidates.repository';
 import { Candidate } from 'src/shared/domain/candidates/candidate.entity';
 import { EventHandlerLogger } from 'src/shared/infrastructure/logger/handler-logger.service';
+import { CandidateStatus } from 'prisma/generated/enums';
 
 @Injectable()
 export class CreateCandidateUseCase implements ICreateCandidateUseCase {
@@ -21,12 +22,18 @@ export class CreateCandidateUseCase implements ICreateCandidateUseCase {
         `Candidate created | id=${candidate.id} | name=${candidate.name}`,
       );
 
-      return new Candidate(candidate);
+      const status = request.status
+        ? (request.status as unknown as CandidateStatus)
+        : CandidateStatus.NEW;
+
+      return new Candidate({ ...candidate, currentStatus: status });
     } catch (err) {
       if (err instanceof ConflictException) {
-        throw this.logger.conflict(err.message, err);
+        this.logger.conflict(err.message, err);
       }
-      throw this.logger.badRequest('Failed to create candidate', err);
+      this.logger.badRequest('Failed to create candidate', err);
     }
+
+    return undefined as never;
   }
 }
