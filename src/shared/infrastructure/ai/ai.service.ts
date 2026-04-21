@@ -53,11 +53,11 @@ const MATCH_CANDIDATE_WITH_VACANCY_SYSTEM_PROMPT = `You are an Expert Technical 
 3. Calculate an objective "matchPercentage" (0 to 100) representing how well the candidate fits the role. Be strict but fair.
 4. Identify 3-5 key "strengths" where the candidate perfectly aligns with or exceeds the vacancy requirements.
 5. Identify any "gaps" (missing skills, insufficient experience, etc.) where the candidate falls short. If none, return an empty array.
-6. Provide a final "recommendation" strictly using one of the following exact string values: "HIGHLY_RECOMMENDED", "RECOMMENDED", "REVIEW_MANUALLY", or "REJECT".
+6. Provide a final "recommendation" strictly using one of the following exact string values: "PROCEED" | "REVIEW_MANUALLY" | "REJECT".
 
 ### RESPONSE FORMAT (JSON):
 {
-  "recommendation": "HIGHLY_RECOMMENDED" | "RECOMMENDED" | "REVIEW_MANUALLY" | "REJECT",
+  "recommendation": "PROCEED" | "REVIEW_MANUALLY" | "REJECT",
   "matchPercentage": number (0-100),
   "strengths": ["string"],
   "gaps": ["string"]
