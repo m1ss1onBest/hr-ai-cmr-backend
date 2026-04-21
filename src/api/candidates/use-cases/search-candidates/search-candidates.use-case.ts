@@ -13,13 +13,12 @@ export class SearchCandidatesUseCase implements ISearchCandidatesUseCase {
   async run(
     request: SearchCandidatesQuery,
   ): Promise<SearchCandidatesPaginatedResponse> {
-    const candidatesData = await this.candidates.searchMany(request);
+    const candidatesData =
+      await this.candidates.searchManyWithCurrentStatus(request);
 
-    const candidatesResponse = {
+    return {
       data: candidatesData.data.map((c) => new Candidate(c)),
       meta: candidatesData.meta,
     };
-
-    return candidatesResponse;
   }
 }

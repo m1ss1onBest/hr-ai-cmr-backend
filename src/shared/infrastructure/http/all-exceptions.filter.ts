@@ -16,15 +16,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const isHttp = exception instanceof HttpException;
+    const status = isHttp
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
-      exception instanceof HttpException
-        ? (exception.getResponse() as any)
-        : (exception as any)?.message;
+    const httpResponse = isHttp ? exception.getResponse() : undefined;
+
+    const message = isHttp
+      ? typeof httpResponse === 'string'
+        ? httpResponse
+        : (httpResponse as any)?.message ?? httpResponse
+      : (exception as any)?.message;
 
     this.logger.warn(
       `EXCEPTION ${request?.method} ${request?.originalUrl ?? request?.url} ` +
@@ -32,15 +35,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         `message=${typeof message === 'string' ? message : JSON.stringify(message)}`,
     );
 
-    // let Nest handle default formatting for HttpException if it can
-    if (exception instanceof HttpException) {
-      throw exception;
-    }
-
-    response.status(status).json({
-      statusCode: status,
-      message: (exception as any)?.message ?? 'Internal server error',
-    });
+    // Always respond here (don't rethrow) so the client sees the actual validation message.
+    response.status(status).json(
+      isHttp
+        ? httpResponse
+        : {
+            statusCode: status,
+            message: (exception as any)?.message ?? 'Internal server error',
+          },
+    );
   }
 }
-

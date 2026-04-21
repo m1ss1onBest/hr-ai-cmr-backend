@@ -7,8 +7,10 @@ import { CandidateBaseResponse } from '../../dto/candidate.base-response';
 @Injectable()
 export class GetCandidateUseCase implements IGetCandidateUseCase {
   constructor(private readonly candidates: CandidatesRepository) {}
+
   async run(request: string): Promise<CandidateBaseResponse> {
-    const candidate = await this.candidates.findOneById(request);
+    const candidate =
+      await this.candidates.findOneByIdWithCurrentStatus(request);
     if (!candidate) {
       throw new NotFoundException('Candidate');
     }
